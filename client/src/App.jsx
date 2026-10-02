@@ -1,9 +1,8 @@
-jsx
 import { useEffect, useState } from "react";
 import {
-  BrowserRouter,
-  Routes,
-  Route,
+BrowserRouter,
+Routes,
+Route,
 } from "react-router-dom";
 
 import Navbar from "./components/Navbar";
@@ -20,201 +19,150 @@ import MyOrders from "./pages/MyOrders";
 import "./App.css";
 
 function App() {
-  // ========================================
-  // SHOPPING CART
-  // ========================================
+const [cart, setCart] = useState([]);
 
-  const [cart, setCart] = useState([]);
+const [user, setUser] = useState(() => {
+const savedUser = localStorage.getItem("user");
 
-  // ========================================
-  // LOGGED-IN USER
-  // ========================================
 
-  const [user, setUser] = useState(() => {
-    const savedUser = localStorage.getItem("user");
-
-    if (savedUser) {
-      try {
-        return JSON.parse(savedUser);
-      } catch {
-        return null;
-      }
-    }
-
+if (savedUser) {
+  try {
+    return JSON.parse(savedUser);
+  } catch {
     return null;
-  });
+  }
+}
 
-  // ========================================
-  // LISTEN FOR LOGIN
-  // ========================================
+return null;
 
-  useEffect(() => {
-    const handleLogin = () => {
-      const savedUser = localStorage.getItem("user");
 
-      if (savedUser) {
-        try {
-          setUser(JSON.parse(savedUser));
-        } catch {
-          setUser(null);
-        }
+});
+
+useEffect(() => {
+const handleLogin = () => {
+const savedUser = localStorage.getItem("user");
+
+
+  if (savedUser) {
+    try {
+      setUser(JSON.parse(savedUser));
+    } catch {
+      setUser(null);
+    }
+  }
+};
+
+window.addEventListener("userLoggedIn", handleLogin);
+
+return () => {
+  window.removeEventListener("userLoggedIn", handleLogin);
+};
+
+
+}, []);
+
+const handleLogout = () => {
+localStorage.removeItem("token");
+localStorage.removeItem("user");
+setUser(null);
+};
+
+const addToCart = (product) => {
+setCart((currentCart) => {
+const existingProduct = currentCart.find(
+(item) => item.id === product.id
+);
+
+
+  if (existingProduct) {
+    return currentCart.map((item) =>
+      item.id === product.id
+        ? {
+            ...item,
+            quantity: item.quantity + 1,
+          }
+        : item
+    );
+  }
+
+  return [
+    ...currentCart,
+    {
+      ...product,
+      quantity: 1,
+    },
+  ];
+});
+
+
+};
+
+return ( <BrowserRouter> <Navbar
+     cartCount={cart.length}
+     user={user}
+     onLogout={handleLogout}
+   />
+
+
+  <Routes>
+    <Route
+      path="/"
+      element={
+        <Home>
+          <Hero />
+          <Categories />
+        </Home>
       }
-    };
+    />
 
-    window.addEventListener("userLoggedIn", handleLogin);
-
-    return () => {
-      window.removeEventListener("userLoggedIn", handleLogin);
-    };
-  }, []);
-
-  // ========================================
-  // LOGOUT
-  // ========================================
-
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
-    setUser(null);
-  };
-
-  // ========================================
-  // ADD PRODUCT TO CART
-  // ========================================
-
-  const addToCart = (product) => {
-    setCart((currentCart) => {
-      const existingProduct = currentCart.find(
-        (item) => item.id === product.id
-      );
-
-      // If product already exists,
-      // increase its quantity
-      if (existingProduct) {
-        return currentCart.map((item) =>
-          item.id === product.id
-            ? {
-                ...item,
-                quantity: item.quantity + 1,
-              }
-            : item
-        );
+    <Route
+      path="/products"
+      element={
+        <ProductsPage
+          addToCart={addToCart}
+        />
       }
+    />
 
-      // Otherwise add new product
-      return [
-        ...currentCart,
-        {
-          ...product,
-          quantity: 1,
-        },
-      ];
-    });
-  };
-
-  // ========================================
-  // APP
-  // ========================================
-
-  return (
-    <BrowserRouter>
-      {/* ====================================
-          NAVBAR
-      ===================================== */}
-
-      <Navbar
-        cartCount={cart.length}
-        user={user}
-        onLogout={handleLogout}
-      />
-
-      {/* ====================================
-          ROUTES
-      ===================================== */}
-
-      <Routes>
-        {/* ==================================
-            HOME
-        =================================== */}
-
-        <Route
-          path="/"
-          element={
-            <Home>
-              <Hero />
-              <Categories />
-            </Home>
-          }
+    <Route
+      path="/cart"
+      element={
+        <Cart
+          cart={cart}
+          setCart={setCart}
         />
+      }
+    />
 
-        {/* ==================================
-            PRODUCTS
-        =================================== */}
-
-        <Route
-          path="/products"
-          element={
-            <ProductsPage addToCart={addToCart} />
-          }
+    <Route
+      path="/checkout"
+      element={
+        <Checkout
+          cart={cart}
+          setCart={setCart}
         />
+      }
+    />
 
-        {/* ==================================
-            CART
-        =================================== */}
+    <Route
+      path="/my-orders"
+      element={<MyOrders />}
+    />
 
-        <Route
-          path="/cart"
-          element={
-            <Cart
-              cart={cart}
-              setCart={setCart}
-            />
-          }
-        />
+    <Route
+      path="/register"
+      element={<Register />}
+    />
 
-        {/* ==================================
-            CHECKOUT
-        =================================== */}
+    <Route
+      path="/login"
+      element={<Login />}
+    />
+  </Routes>
+</BrowserRouter>
 
-        <Route
-          path="/checkout"
-          element={
-            <Checkout
-              cart={cart}
-              setCart={setCart}
-            />
-          }
-        />
 
-        {/* ==================================
-            MY ORDERS
-        =================================== */}
-
-        <Route
-          path="/my-orders"
-          element={<MyOrders />}
-        />
-
-        {/* ==================================
-            REGISTER
-        =================================== */}
-
-        <Route
-          path="/register"
-          element={<Register />}
-        />
-
-        {/* ==================================
-            LOGIN
-        =================================== */}
-
-        <Route
-          path="/login"
-          element={<Login />}
-        />
-      </Routes>
-    </BrowserRouter>
-  );
+);
 }
 
 export default App;
