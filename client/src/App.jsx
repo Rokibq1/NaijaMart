@@ -1,3 +1,4 @@
+```jsx
 import { useEffect, useState } from "react";
 import {
   BrowserRouter,
@@ -8,7 +9,6 @@ import {
 import Navbar from "./components/Navbar";
 import Hero from "./components/Hero";
 import Categories from "./components/Categories";
-
 import Home from "./pages/Home";
 import ProductsPage from "./pages/ProductsPage";
 import Cart from "./pages/Cart";
@@ -23,18 +23,20 @@ function App() {
   // ========================================
   // SHOPPING CART
   // ========================================
+
   const [cart, setCart] = useState([]);
 
   // ========================================
   // LOGGED-IN USER
   // ========================================
+
   const [user, setUser] = useState(() => {
     const savedUser = localStorage.getItem("user");
 
     if (savedUser) {
       try {
         return JSON.parse(savedUser);
-      } catch (error) {
+      } catch {
         return null;
       }
     }
@@ -45,15 +47,15 @@ function App() {
   // ========================================
   // LISTEN FOR LOGIN
   // ========================================
+
   useEffect(() => {
     const handleLogin = () => {
-      const savedUser =
-        localStorage.getItem("user");
+      const savedUser = localStorage.getItem("user");
 
       if (savedUser) {
         try {
           setUser(JSON.parse(savedUser));
-        } catch (error) {
+        } catch {
           setUser(null);
         }
       }
@@ -75,22 +77,22 @@ function App() {
   // ========================================
   // LOGOUT
   // ========================================
+
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
-
     setUser(null);
   };
 
   // ========================================
   // ADD PRODUCT TO CART
   // ========================================
+
   const addToCart = (product) => {
     setCart((currentCart) => {
-      const existingProduct =
-        currentCart.find(
-          (item) => item.id === product.id
-        );
+      const existingProduct = currentCart.find(
+        (item) => item.id === product.id
+      );
 
       // If product already exists,
       // increase its quantity
@@ -99,8 +101,7 @@ function App() {
           item.id === product.id
             ? {
                 ...item,
-                quantity:
-                  item.quantity + 1,
+                quantity: item.quantity + 1,
               }
             : item
         );
@@ -120,12 +121,13 @@ function App() {
   // ========================================
   // APP
   // ========================================
+
   return (
     <BrowserRouter>
-
       {/* ====================================
           NAVBAR
       ===================================== */}
+
       <Navbar
         cartCount={cart.length}
         user={user}
@@ -135,11 +137,12 @@ function App() {
       {/* ====================================
           ROUTES
       ===================================== */}
-      <Routes>
 
+      <Routes>
         {/* ==================================
             HOME
         =================================== */}
+
         <Route
           path="/"
           element={
@@ -153,6 +156,7 @@ function App() {
         {/* ==================================
             PRODUCTS
         =================================== */}
+
         <Route
           path="/products"
           element={
@@ -165,6 +169,7 @@ function App() {
         {/* ==================================
             CART
         =================================== */}
+
         <Route
           path="/cart"
           element={
@@ -178,6 +183,7 @@ function App() {
         {/* ==================================
             CHECKOUT
         =================================== */}
+
         <Route
           path="/checkout"
           element={
@@ -191,6 +197,7 @@ function App() {
         {/* ==================================
             MY ORDERS
         =================================== */}
+
         <Route
           path="/my-orders"
           element={<MyOrders />}
@@ -199,6 +206,7 @@ function App() {
         {/* ==================================
             REGISTER
         =================================== */}
+
         <Route
           path="/register"
           element={<Register />}
@@ -207,15 +215,15 @@ function App() {
         {/* ==================================
             LOGIN
         =================================== */}
+
         <Route
           path="/login"
           element={<Login />}
         />
-
       </Routes>
-
     </BrowserRouter>
   );
 }
 
 export default App;
+```
