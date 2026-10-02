@@ -1,4 +1,4 @@
-```jsx
+jsx
 import { useEffect, useState } from "react";
 import {
   BrowserRouter,
@@ -61,16 +61,10 @@ function App() {
       }
     };
 
-    window.addEventListener(
-      "userLoggedIn",
-      handleLogin
-    );
+    window.addEventListener("userLoggedIn", handleLogin);
 
     return () => {
-      window.removeEventListener(
-        "userLoggedIn",
-        handleLogin
-      );
+      window.removeEventListener("userLoggedIn", handleLogin);
     };
   }, []);
 
@@ -160,9 +154,7 @@ function App() {
         <Route
           path="/products"
           element={
-            <ProductsPage
-              addToCart={addToCart}
-            />
+            <ProductsPage addToCart={addToCart} />
           }
         />
 
@@ -226,4 +218,3 @@ function App() {
 }
 
 export default App;
-```
