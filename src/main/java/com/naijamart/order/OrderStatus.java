@@ -1,0 +1,11 @@
+
+package com.naijamart.order;
+
+public enum OrderStatus {
+    PENDING,
+    CONFIRMED,
+    PROCESSING,
+    SHIPPED,
+    DELIVERED,
+    CANCELLED
+}

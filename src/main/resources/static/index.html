@@ -1,0 +1,2153 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NaijaMart | Online Shopping</title>
+
+    <style>
+        :root {
+            --primary: #087443;
+            --primary-dark: #055b34;
+            --accent: #f5a623;
+            --background: #f5f7f6;
+            --white: #fff;
+            --text: #222;
+            --muted: #6b7280;
+            --border: #e5e7eb;
+            --danger: #dc2626;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            background: var(--background);
+            color: var(--text);
+            line-height: 1.6;
+        }
+
+        button, input, textarea { font: inherit; }
+        button { cursor: pointer; }
+        button:disabled { cursor: not-allowed; opacity: .65; }
+        a { color: inherit; text-decoration: none; }
+        [hidden] { display: none !important; }
+
+        .top-bar {
+            background: #064b2d;
+            color: white;
+            text-align: center;
+            padding: 8px 15px;
+            font-size: 13px;
+        }
+
+        header {
+            background: white;
+            padding: 15px 5%;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 18px;
+            flex-wrap: wrap;
+            box-shadow: 0 2px 8px #0000000a;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .logo {
+            font-size: 28px;
+            font-weight: bold;
+            color: var(--primary);
+            white-space: nowrap;
+        }
+
+        .logo span { color: var(--accent); }
+
+        .search-form {
+            display: flex;
+            flex: 1;
+            max-width: 550px;
+            min-width: 190px;
+        }
+
+        .search-form input {
+            flex: 1;
+            min-width: 0;
+            padding: 11px;
+            border: 1px solid var(--border);
+            border-radius: 6px 0 0 6px;
+            outline-color: var(--primary);
+        }
+
+        .search-form button {
+            border: none;
+            background: var(--primary);
+            color: white;
+            padding: 11px 16px;
+            border-radius: 0 6px 6px 0;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .nav-button {
+            border: none;
+            border-radius: 6px;
+            padding: 10px 12px;
+            background: #eaf5ee;
+            color: var(--primary-dark);
+            font-weight: bold;
+        }
+
+        .nav-button.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        .cart-count {
+            display: inline-block;
+            min-width: 20px;
+            text-align: center;
+        }
+
+        .page-view { display: none; }
+        .page-view.active { display: block; }
+
+        .hero {
+            margin: 24px auto;
+            width: 90%;
+            min-height: 285px;
+            border-radius: 14px;
+            padding: 42px;
+            display: flex;
+            align-items: center;
+            color: white;
+            background:
+                linear-gradient(90deg, #064b2d 0%, #087443ee 55%, #08744370 100%),
+                url("https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?auto=format&fit=crop&w=1600&q=80")
+                center/cover;
+        }
+
+        .hero-content { max-width: 570px; }
+        .hero h1 {
+            font-size: clamp(30px, 5vw, 48px);
+            line-height: 1.15;
+            margin-bottom: 14px;
+        }
+
+        .hero p { font-size: 17px; margin-bottom: 22px; }
+
+        .hero button {
+            background: var(--accent);
+            color: #222;
+            border: none;
+            border-radius: 6px;
+            padding: 13px 22px;
+            font-weight: bold;
+        }
+
+        .features {
+            width: 90%;
+            margin: 0 auto 28px;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 14px;
+        }
+
+        .feature {
+            background: white;
+            padding: 18px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            text-align: center;
+        }
+
+        .feature-icon { font-size: 27px; margin-bottom: 5px; }
+        .feature h3 { font-size: 15px; }
+        .feature p { font-size: 12px; color: var(--muted); }
+
+        .section { width: 90%; margin: 35px auto; }
+
+        .section-heading {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .section-heading h1,
+        .section-heading h2 { font-size: 25px; }
+
+        .section-heading p {
+            color: var(--muted);
+            font-size: 14px;
+        }
+
+        .secondary-button {
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            background: white;
+            color: var(--primary-dark);
+            padding: 10px 14px;
+            font-weight: bold;
+        }
+
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 20px;
+        }
+
+        .product-card {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            overflow: hidden;
+            transition: transform .2s, box-shadow .2s;
+        }
+
+        .product-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 22px #00000010;
+        }
+
+        .product-image-wrap {
+            height: 210px;
+            background: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            padding: 10px;
+            position: relative;
+        }
+
+        .product-image {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .stock-badge {
+            position: absolute;
+            left: 10px;
+            top: 10px;
+            background: #e5f7eb;
+            color: #087443;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: bold;
+            z-index: 1;
+        }
+
+        .stock-badge.out-of-stock {
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+
+        .product-details { padding: 15px; }
+
+        .product-details h3 {
+            font-size: 16px;
+            line-height: 1.4;
+            margin-bottom: 7px;
+        }
+
+        .product-description {
+            color: var(--muted);
+            font-size: 13px;
+            margin-bottom: 10px;
+            min-height: 38px;
+        }
+
+        .product-price {
+            color: var(--primary);
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .stock-text {
+            font-size: 12px;
+            color: var(--muted);
+            margin-bottom: 12px;
+        }
+
+        .add-to-cart, .primary-button {
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            padding: 12px;
+            width: 100%;
+            font-weight: bold;
+        }
+
+        .add-to-cart:hover, .primary-button:hover {
+            background: var(--primary-dark);
+        }
+
+        .empty-state {
+            text-align: center;
+            background: white;
+            padding: 35px;
+            border-radius: 10px;
+            color: var(--muted);
+            grid-column: 1 / -1;
+        }
+
+        .shopping-layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 22px;
+            align-items: start;
+        }
+
+        .panel {
+            background: white;
+            padding: 22px;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+        }
+
+        .panel h2 { margin-bottom: 18px; }
+
+        .cart-item {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 13px 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .cart-item-info { flex: 1; min-width: 0; }
+        .cart-item-info strong { display: block; font-size: 14px; }
+        .cart-item-info small { color: var(--muted); }
+
+        .quantity-controls {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 7px;
+        }
+
+        .quantity-controls button, .remove-item {
+            border: 1px solid var(--border);
+            background: white;
+            padding: 3px 10px;
+            border-radius: 4px;
+        }
+
+        .remove-item { color: var(--danger); margin-top: 5px; }
+
+        .cart-total {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            margin-top: 18px;
+            font-size: 19px;
+            font-weight: bold;
+        }
+
+        .checkout-form, .login-form { display: grid; gap: 13px; }
+
+        .checkout-form label, .login-form label {
+            font-size: 13px;
+            font-weight: bold;
+        }
+
+        .checkout-form input,
+        .checkout-form textarea,
+        .login-form input {
+            width: 100%;
+            padding: 11px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            margin-top: 5px;
+            outline-color: var(--primary);
+        }
+
+        .checkout-form textarea { resize: vertical; min-height: 80px; }
+
+        .notice {
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            font-size: 14px;
+            display: none;
+            overflow-wrap: anywhere;
+        }
+
+        .notice.success, .notice.error, .notice.info { display: block; }
+        .notice.success { background: #dcfce7; color: #166534; }
+        .notice.error { background: #fee2e2; color: #991b1b; }
+        .notice.info { background: #dbeafe; color: #1e40af; }
+
+        .login-container {
+            width: 90%;
+            max-width: 480px;
+            margin: 40px auto;
+        }
+
+        .login-panel {
+            background: white;
+            padding: 28px;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            box-shadow: 0 8px 25px #00000008;
+        }
+
+        .login-heading { text-align: center; margin-bottom: 22px; }
+        .login-heading h1 { color: var(--primary); margin-bottom: 6px; }
+        .login-heading p { color: var(--muted); font-size: 14px; }
+
+        .google-login-button {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            background: white;
+            color: #222;
+            font-weight: bold;
+            margin-top: 14px;
+        }
+
+        .google-login-button:hover { background: #f9fafb; }
+
+        .login-divider {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: var(--muted);
+            font-size: 13px;
+            margin: 18px 0;
+        }
+
+        .login-divider::before, .login-divider::after {
+            content: "";
+            height: 1px;
+            background: var(--border);
+            flex: 1;
+        }
+
+        .login-account-status {
+            margin-top: 15px;
+            padding: 12px;
+            border-radius: 6px;
+            background: #f0fdf4;
+            color: var(--primary-dark);
+            font-size: 13px;
+            overflow-wrap: anywhere;
+        }
+
+        .tracking-form { display: flex; gap: 8px; margin-bottom: 16px; }
+
+        .tracking-form input {
+            flex: 1;
+            min-width: 0;
+            padding: 11px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+        }
+
+        .tracking-form button {
+            border: none;
+            border-radius: 6px;
+            background: var(--primary);
+            color: white;
+            padding: 10px 15px;
+        }
+
+        .tracking-result {
+            padding: 16px;
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            border-radius: 6px;
+            overflow-wrap: anywhere;
+        }
+
+        .tracking-result p { margin: 7px 0; }
+        .tracking-result h3 { margin-bottom: 10px; }
+        .back-to-shop { margin-top: 18px; }
+
+        footer {
+            background: #073b26;
+            color: white;
+            margin-top: 50px;
+            padding: 35px 5% 18px;
+        }
+
+        .footer-content {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr;
+            gap: 25px;
+        }
+
+        footer h3 { margin-bottom: 10px; }
+        footer p, footer a { font-size: 13px; color: #d1d5db; }
+        footer a { display: block; margin-bottom: 6px; }
+        footer a:hover { color: white; text-decoration: underline; }
+
+        .copyright {
+            border-top: 1px solid #ffffff30;
+            margin-top: 25px;
+            padding-top: 15px;
+            text-align: center;
+            color: #d1d5db;
+            font-size: 12px;
+        }
+
+        @media(max-width: 1000px) {
+            .products-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+            .features { grid-template-columns: repeat(2, 1fr); }
+        }
+
+        @media(max-width: 700px) {
+            header { position: static; }
+            .search-form { order: 3; flex-basis: 100%; max-width: none; }
+            .header-actions { width: 100%; }
+            .header-actions button { flex: 1; }
+            .hero { padding: 30px 22px; min-height: 250px; }
+            .products-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+            .product-image-wrap { height: 155px; }
+            .product-details { padding: 10px; }
+            .product-details h3 { font-size: 14px; }
+            .product-price { font-size: 17px; }
+            .shopping-layout { grid-template-columns: 1fr; }
+            .section, .hero, .features { width: 92%; }
+            .features { gap: 8px; }
+            .feature { padding: 12px 6px; }
+            .footer-content { grid-template-columns: 1fr; }
+            .tracking-form { flex-direction: column; }
+            .login-panel { padding: 20px; }
+        }
+
+        @media(max-width: 360px) {
+            .products-grid { grid-template-columns: 1fr; }
+            .product-image-wrap { height: 220px; }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="top-bar">
+        Welcome to NaijaMart — Quality products, convenient shopping!
+    </div>
+
+    <header>
+        <a class="logo" href="#" onclick="showView('shopView'); return false;">
+            Naija<span>Mart</span>
+        </a>
+
+        <form class="search-form" id="searchForm">
+            <input type="search" id="searchInput"
+                placeholder="Search phones, laptops, headphones..."
+                aria-label="Search products">
+            <button type="submit">Search</button>
+        </form>
+
+        <nav class="header-actions" aria-label="Main navigation">
+            <button type="button" id="shopNav" class="nav-button active"
+                onclick="showView('shopView')">Shop</button>
+
+            <button type="button" id="cartNav" class="nav-button"
+                onclick="showView('cartView')">
+                🛒 Cart (<span id="cartCount" class="cart-count">0</span>)
+            </button>
+
+            <button type="button" id="loginNav" class="nav-button"
+                onclick="showView('loginView')">Login</button>
+
+            <button type="button" id="trackingNav" class="nav-button"
+                onclick="showView('trackingView')">Track Order</button>
+        </nav>
+    </header>
+
+    <main>
+        <div id="shopView" class="page-view active">
+            <section class="hero">
+                <div class="hero-content">
+                    <h1>Everything You Need, All in One Place</h1>
+                    <p>
+                        Discover electronics and everyday essentials at
+                        NaijaMart. Shop conveniently and track your orders.
+                    </p>
+                    <button type="button"
+                        onclick="document.getElementById('products').scrollIntoView({behavior:'smooth'})">
+                        Start Shopping
+                    </button>
+                </div>
+            </section>
+
+            <section class="features" aria-label="Shopping benefits">
+                <div class="feature">
+                    <div class="feature-icon">🚚</div>
+                    <h3>Convenient Shopping</h3>
+                    <p>Shop from wherever you are.</p>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">🔒</div>
+                    <h3>Easy Checkout</h3>
+                    <p>Provide your delivery details.</p>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">📦</div>
+                    <h3>Order Tracking</h3>
+                    <p>Check your order status.</p>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">📱</div>
+                    <h3>Great Products</h3>
+                    <p>Find everyday essentials.</p>
+                </div>
+            </section>
+
+            <section class="section" id="products">
+                <div class="section-heading">
+                    <div>
+                        <h1>Our Products</h1>
+                        <p>Browse products available from NaijaMart.</p>
+                    </div>
+                    <button type="button" class="secondary-button"
+                        onclick="loadProducts()">Show All Products</button>
+                </div>
+
+                <div id="productsNotice" class="notice"></div>
+                <div id="productsGrid" class="products-grid">
+                    <div class="empty-state">Loading products...</div>
+                </div>
+            </section>
+        </div>
+
+        <div id="cartView" class="page-view">
+            <section class="section">
+                <div class="section-heading">
+                    <div>
+                        <h1>My Shopping Cart</h1>
+                        <p>Review your items and complete your order here.</p>
+                    </div>
+                    <button type="button" class="secondary-button"
+                        onclick="showView('shopView')">Continue Shopping</button>
+                </div>
+
+                <div class="shopping-layout">
+                    <div class="panel">
+                        <h2>🛒 Cart Items</h2>
+                        <div id="cartItems"></div>
+                        <div class="cart-total">
+                            <span>Total</span>
+                            <span id="cartTotal">₦0.00</span>
+                        </div>
+                    </div>
+
+                    <div class="panel">
+                        <h2>Checkout Details</h2>
+                        <div id="checkoutNotice" class="notice"></div>
+
+                        <form class="checkout-form" id="checkoutForm">
+                            <label>Full Name
+                                <input type="text" id="customerName" required
+                                    maxlength="120" autocomplete="name"
+                                    placeholder="Enter your full name">
+                            </label>
+
+                            <label>Email Address
+                                <input type="email" id="customerEmail" required
+                                    maxlength="254" autocomplete="email"
+                                    placeholder="Enter your email address">
+                            </label>
+
+                            <label>Phone Number
+                                <input type="tel" id="customerPhone" required
+                                    maxlength="30" autocomplete="tel"
+                                    placeholder="Enter your phone number">
+                            </label>
+
+                            <label>Delivery Address
+                                <textarea id="deliveryAddress" required
+                                    maxlength="500" autocomplete="street-address"
+                                    placeholder="Enter your complete delivery address"></textarea>
+                            </label>
+
+                            <button type="submit" id="placeOrderButton"
+                                class="primary-button">Place Order</button>
+
+                            <p style="font-size:12px;color:#6b7280">
+                                Email confirmation depends on your backend email configuration.
+                            </p>
+                        </form>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <div id="loginView" class="page-view">
+            <section class="login-container">
+                <div class="login-panel">
+                    <div class="login-heading" id="loginHeading">
+                        <h1>Welcome Back</h1>
+                        <p>Sign in to your NaijaMart account.</p>
+                    </div>
+
+                    <div id="loginNotice" class="notice"></div>
+                    <div id="loginAccountStatus" class="login-account-status" hidden></div>
+
+                    <div id="authOptions">
+                        <button type="button" id="showLoginOption"
+                            class="primary-button" style="margin-bottom:12px">
+                            Sign In
+                        </button>
+
+                        <button type="button" id="showSignupButton"
+                            class="google-login-button" style="margin-bottom:12px">
+                            New customer? Create an account
+                        </button>
+                    </div>
+
+                    <form class="login-form" id="loginForm" hidden>
+                        <label>Email Address
+                            <input type="email" id="loginEmail" required
+                                maxlength="254" autocomplete="email"
+                                placeholder="Enter your email address">
+                        </label>
+
+                        <label>Password
+                            <input type="password" id="loginPassword" required
+                                autocomplete="current-password"
+                                placeholder="Enter your password">
+                        </label>
+
+                        <button type="submit" id="loginButton"
+                            class="primary-button">Sign In</button>
+                    </form>
+
+                    <div id="signupPanel" hidden>
+                        <div class="login-heading" style="margin-top:20px">
+                            <h1>Create Account</h1>
+                            <p>Join NaijaMart and start shopping.</p>
+                        </div>
+
+                        <div id="signupNotice" class="notice"></div>
+
+                        <form class="login-form" id="signupForm">
+                            <label>First Name
+                                <input type="text" id="signupFirstName"
+                                    required maxlength="80" autocomplete="given-name"
+                                    placeholder="Enter your first name">
+                            </label>
+
+                            <label>Last Name
+                                <input type="text" id="signupLastName"
+                                    required maxlength="80" autocomplete="family-name"
+                                    placeholder="Enter your last name">
+                            </label>
+
+                            <label>Email Address
+                                <input type="email" id="signupEmail"
+                                    required maxlength="254" autocomplete="email"
+                                    placeholder="Enter your email address">
+                            </label>
+
+                            <label>Phone Number
+                                <input type="tel" id="signupPhone"
+                                    maxlength="30" autocomplete="tel"
+                                    placeholder="Enter your phone number">
+                            </label>
+
+                            <label>Delivery Address
+                                <input type="text" id="signupAddress"
+                                    maxlength="255" autocomplete="street-address"
+                                    placeholder="Enter your delivery address">
+                            </label>
+
+                            <label>Password
+                                <input type="password" id="signupPassword"
+                                    required minlength="8" maxlength="72"
+                                    autocomplete="new-password"
+                                    placeholder="Create a password (at least 8 characters)">
+                            </label>
+
+                            <label>Confirm Password
+                                <input type="password" id="signupConfirmPassword"
+                                    required minlength="8" maxlength="72"
+                                    autocomplete="new-password"
+                                    placeholder="Enter your password again">
+                            </label>
+
+                            <button type="submit" id="signupButton"
+                                class="primary-button">Create Account</button>
+                        </form>
+
+                        <button type="button" id="showLoginButton"
+                            class="google-login-button" style="margin-top:12px">
+                            Already have an account? Sign in
+                        </button>
+                    </div>
+
+                    <div class="login-divider" id="loginDivider" hidden>OR</div>
+
+                    <button type="button" id="googleLoginButton"
+                        class="google-login-button" hidden
+                        onclick="startGoogleLogin()">
+                        Continue with Google
+                    </button>
+
+                    <button type="button" id="logoutButton"
+                        class="secondary-button"
+                        style="width:100%;margin-top:12px;display:none"
+                        onclick="logout()">Sign Out</button>
+
+                    <p style="font-size:12px;color:#6b7280;margin-top:18px;text-align:center">
+                        Google Sign-In requires the Google OAuth settings and
+                        backend endpoints to be configured correctly.
+                    </p>
+                </div>
+            </section>
+        </div>
+
+        <div id="paymentView" class="page-view">
+            <section class="section">
+                <div class="panel">
+                    <h1>Payment</h1>
+                    <p style="color:#6b7280;margin:12px 0">
+                        Review your order total before continuing.
+                    </p>
+
+                    <div style="padding:20px;background:#f8fafc;border-radius:12px;margin:20px 0">
+                        <p style="color:#6b7280">Amount to pay</p>
+                        <h2 id="paymentAmount">₦0.00</h2>
+                        <p style="font-size:13px;color:#6b7280">
+                            Local simulation only. No real money will be charged.
+                        </p>
+                    </div>
+
+                    <div id="paymentNotice" class="notice"></div>
+
+                    <button type="button" id="simulatePaymentButton"
+                        class="primary-button">
+                        Simulate Successful Payment
+                    </button>
+
+                    <button type="button" id="cancelPaymentButton"
+                        class="primary-button"
+                        style="margin-top:10px;background:#6b7280">
+                        Return to Shop
+                    </button>
+                </div>
+            </section>
+        </div>
+
+        <div id="trackingView" class="page-view">
+            <section class="section">
+                <div class="panel">
+                    <h1 style="margin-bottom:8px">📦 Track Your Order</h1>
+                    <p style="color:#6b7280;margin-bottom:18px">
+                        Enter the tracking number provided after placing your order.
+                    </p>
+
+                    <form class="tracking-form" id="trackingForm">
+                        <input type="text" id="trackingNumber" required
+                            placeholder="Enter your tracking number"
+                            aria-label="Tracking number">
+                        <button type="submit">Track Order</button>
+                    </form>
+
+                    <div id="trackingNotice" class="notice"></div>
+                    <div id="trackingResult"></div>
+
+                    <button type="button" class="secondary-button back-to-shop"
+                        onclick="showView('shopView')">Continue Shopping</button>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <footer>
+        <div class="footer-content">
+            <div>
+                <h3>NaijaMart</h3>
+                <p>
+                    Your online shopping platform for discovering products,
+                    placing orders, and tracking deliveries.
+                </p>
+            </div>
+
+            <div>
+                <h3>Quick Links</h3>
+                <a href="#products" onclick="showView('shopView'); return false;">Products</a>
+                <a href="#cart" onclick="showView('cartView'); return false;">Shopping Cart</a>
+                <a href="#tracking" onclick="showView('trackingView'); return false;">Track Order</a>
+            </div>
+
+            <div>
+                <h3>Customer Service</h3>
+                <p>Place an order and receive a tracking number.</p>
+            </div>
+        </div>
+
+        <div class="copyright">
+            &copy; <span id="year"></span> NaijaMart. All rights reserved.
+        </div>
+    </footer>
+
+    <script>
+        "use strict";
+
+        const API_BASE = "/api";
+        const CART_STORAGE_KEY = "naijamart-cart";
+        const TOKEN_STORAGE_KEY = "naijamart-token";
+        const EMAIL_STORAGE_KEY = "naijamart-email";
+        const ROLE_STORAGE_KEY = "naijamart-role";
+        const FIRST_NAME_STORAGE_KEY = "naijamart-firstName";
+
+        let products = [];
+        let cart = loadSavedCart();
+        let pendingPaymentOrder = null;
+
+        function getAuthToken() {
+            return localStorage.getItem(TOKEN_STORAGE_KEY) || "";
+        }
+
+        function getAuthHeaders() {
+            const token = getAuthToken();
+            return token ? { Authorization: "Bearer " + token } : {};
+        }
+
+        function decodeJwtPayload(token) {
+            try {
+                const parts = token.split(".");
+                if (parts.length !== 3) return {};
+
+                const base64 = parts[1]
+                    .replace(/-/g, "+")
+                    .replace(/_/g, "/");
+
+                const padded = base64.padEnd(
+                    Math.ceil(base64.length / 4) * 4,
+                    "="
+                );
+
+                return JSON.parse(atob(padded));
+            } catch (error) {
+                console.warn("Could not read JWT payload:", error);
+                return {};
+            }
+        }
+
+        function getFirstNameFromEmail(email) {
+            const emailName = String(email || "").split("@")[0];
+            const firstPart = emailName.split(/[._+-]/)[0];
+
+            if (!firstPart) return "";
+
+            return firstPart.charAt(0).toUpperCase()
+                + firstPart.slice(1).toLowerCase();
+        }
+
+        function getFriendlyFirstName(data, payload, email) {
+            const suppliedName =
+                (data && (
+                    data.firstName ||
+                    data.givenName ||
+                    data.given_name ||
+                    data.name
+                )) ||
+                (payload && (
+                    payload.given_name ||
+                    payload.firstName ||
+                    payload.first_name ||
+                    payload.name
+                )) ||
+                localStorage.getItem(FIRST_NAME_STORAGE_KEY) ||
+                localStorage.getItem("firstName") ||
+                "";
+
+            if (String(suppliedName).trim()) {
+                return String(suppliedName).trim().split(/\s+/)[0];
+            }
+
+            return getFirstNameFromEmail(email);
+        }
+
+        function saveLoginSession(data, fallbackEmail = "") {
+            if (!data || !data.token) {
+                throw new Error("The server did not return an authentication token.");
+            }
+
+            const payload = decodeJwtPayload(data.token);
+            const email = data.email || fallbackEmail || payload.email || payload.sub || "";
+            const firstName = getFriendlyFirstName(data, payload, email);
+
+            localStorage.setItem(TOKEN_STORAGE_KEY, data.token);
+
+            if (email) localStorage.setItem(EMAIL_STORAGE_KEY, email);
+            if (data.role) localStorage.setItem(ROLE_STORAGE_KEY, data.role);
+            if (firstName) localStorage.setItem(FIRST_NAME_STORAGE_KEY, firstName);
+
+            updateLoginInterface();
+            prefillCheckoutEmail();
+        }
+
+        function updateLoginInterface() {
+            const token = getAuthToken();
+            const email = localStorage.getItem(EMAIL_STORAGE_KEY) || "";
+            const loginNav = document.getElementById("loginNav");
+            const status = document.getElementById("loginAccountStatus");
+            const logoutButton = document.getElementById("logoutButton");
+            const googleButton = document.getElementById("googleLoginButton");
+
+            if (token) {
+                let customerName =
+                    localStorage.getItem(FIRST_NAME_STORAGE_KEY) ||
+                    localStorage.getItem("firstName") ||
+                    "";
+
+                if (!customerName) {
+                    customerName = getFirstNameFromEmail(email);
+                    if (customerName) {
+                        localStorage.setItem(FIRST_NAME_STORAGE_KEY, customerName);
+                    }
+                }
+
+                loginNav.textContent = customerName
+                    ? "Hi, " + customerName + "!"
+                    : "My Account";
+
+                status.hidden = false;
+                status.textContent = email
+                    ? "Signed in as " + email
+                    : "You are signed in to NaijaMart.";
+
+                logoutButton.style.display = "block";
+                googleButton.style.display = "none";
+            } else {
+                loginNav.textContent = "Login";
+                status.hidden = true;
+                status.textContent = "";
+                logoutButton.style.display = "none";
+                googleButton.style.display = "block";
+            }
+        }
+
+        function prefillCheckoutEmail() {
+            const email = localStorage.getItem(EMAIL_STORAGE_KEY) || "";
+            const emailInput = document.getElementById("customerEmail");
+            const loginEmail = document.getElementById("loginEmail");
+            const firstName = localStorage.getItem(FIRST_NAME_STORAGE_KEY) || "";
+            const customerNameInput = document.getElementById("customerName");
+
+            if (email && emailInput && !emailInput.value.trim()) {
+                emailInput.value = email;
+            }
+
+            if (email && loginEmail && !loginEmail.value.trim()) {
+                loginEmail.value = email;
+            }
+
+            if (firstName && customerNameInput && !customerNameInput.value.trim()) {
+                customerNameInput.value = firstName;
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem(TOKEN_STORAGE_KEY);
+            localStorage.removeItem(EMAIL_STORAGE_KEY);
+            localStorage.removeItem(ROLE_STORAGE_KEY);
+            localStorage.removeItem(FIRST_NAME_STORAGE_KEY);
+            localStorage.removeItem("firstName");
+
+            updateLoginInterface();
+            showAuthOptions();
+
+            showNotice(
+                "loginNotice",
+                "You have signed out of NaijaMart.",
+                "success"
+            );
+
+            showView("loginView");
+        }
+
+        function startGoogleLogin() {
+            window.location.href = "/oauth2/authorization/google";
+        }
+
+        async function handleGoogleLoginCallback() {
+            const currentUrl = new URL(window.location.href);
+            const googleCode = currentUrl.searchParams.get("googleCode");
+
+            if (!googleCode) return;
+
+            currentUrl.searchParams.delete("googleCode");
+
+            window.history.replaceState(
+                {},
+                document.title,
+                currentUrl.pathname + currentUrl.search + currentUrl.hash
+            );
+
+            showView("loginView");
+            showLoginScreen();
+            showNotice("loginNotice", "Completing your Google Sign-In...", "info");
+
+            try {
+                const response = await fetch(API_BASE + "/auth/google/exchange", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ code: googleCode })
+                });
+
+                const responseText = await response.text();
+                let data = {};
+
+                try {
+                    data = responseText ? JSON.parse(responseText) : {};
+                } catch {
+                    data = {};
+                }
+
+                if (!response.ok) {
+                    throw new Error(
+                        data.message || data.error ||
+                        "Google Sign-In failed. Please try again."
+                    );
+                }
+
+                if (!data.token) {
+                    throw new Error("Google Sign-In did not return an authentication token.");
+                }
+
+                const payload = decodeJwtPayload(data.token);
+                const email = data.email || payload.email || payload.sub || "";
+
+                saveLoginSession(data, email);
+
+                showNotice(
+                    "loginNotice",
+                    "Google Sign-In successful. Welcome to NaijaMart!",
+                    "success"
+                );
+
+                showView("shopView");
+            } catch (error) {
+                console.error("Google login error:", error);
+                showView("loginView");
+                showLoginScreen();
+
+                showNotice(
+                    "loginNotice",
+                    error.message || "Google Sign-In could not be completed.",
+                    "error"
+                );
+            }
+        }
+
+        function showView(viewId) {
+            const validViews = [
+                "shopView",
+                "cartView",
+                "loginView",
+                "trackingView",
+                "paymentView"
+            ];
+
+            if (!validViews.includes(viewId)) return;
+
+            document.querySelectorAll(".page-view").forEach(function(view) {
+                view.classList.toggle("active", view.id === viewId);
+            });
+
+            document.getElementById("shopNav").classList.toggle("active", viewId === "shopView");
+            document.getElementById("cartNav").classList.toggle("active", viewId === "cartView");
+            document.getElementById("loginNav").classList.toggle("active", viewId === "loginView");
+            document.getElementById("trackingNav").classList.toggle("active", viewId === "trackingView");
+
+            if (viewId === "cartView") {
+                renderCart();
+                prefillCheckoutEmail();
+            }
+
+            if (viewId === "loginView") {
+                updateLoginInterface();
+                prefillCheckoutEmail();
+            }
+
+            window.scrollTo({ top: 0, behavior: "smooth" });
+        }
+
+        function money(amount) {
+            return new Intl.NumberFormat("en-NG", {
+                style: "currency",
+                currency: "NGN",
+                minimumFractionDigits: 2
+            }).format(Number(amount) || 0);
+        }
+
+        function escapeHtml(value) {
+            return String(value ?? "").replace(/[&<>"']/g, function(character) {
+                const entities = {
+                    "&": "&amp;",
+                    "<": "&lt;",
+                    ">": "&gt;",
+                    '"': "&quot;",
+                    "'": "&#39;"
+                };
+                return entities[character];
+            });
+        }
+
+        function showNotice(elementId, message, type) {
+            const element = document.getElementById(elementId);
+            element.textContent = message;
+            element.className = "notice " + type;
+        }
+
+        function clearNotice(elementId) {
+            const element = document.getElementById(elementId);
+            element.textContent = "";
+            element.className = "notice";
+        }
+
+        function loadSavedCart() {
+            try {
+                const saved = JSON.parse(localStorage.getItem(CART_STORAGE_KEY) || "[]");
+                if (!Array.isArray(saved)) return [];
+
+                return saved.filter(function(item) {
+                    return Number.isInteger(Number(item.id)) &&
+                        Number(item.id) > 0 &&
+                        Number.isInteger(Number(item.quantity)) &&
+                        Number(item.quantity) > 0;
+                }).map(function(item) {
+                    return {
+                        id: Number(item.id),
+                        name: String(item.name || "Product"),
+                        price: Number(item.price) || 0,
+                        stockQuantity: Math.max(0, Number(item.stockQuantity) || 0),
+                        quantity: Number(item.quantity)
+                    };
+                });
+            } catch (error) {
+                console.error("Could not load saved cart:", error);
+                return [];
+            }
+        }
+
+        function saveCart() {
+            try {
+                localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart));
+            } catch (error) {
+                console.error("Could not save cart:", error);
+            }
+        }
+
+        function getLocalImageForProduct(product) {
+            const name = String(product.name || "").toLowerCase();
+
+            const mappings = [
+                { keywords: ["samsung", "galaxy"], url: "/images/samsung-phone.jpg" },
+                { keywords: ["hp laptop", "hewlett-packard"], url: "/images/hp-laptop.jpg" },
+                { keywords: ["laptop", "notebook"], url: "/images/hp-laptop.jpg" },
+                { keywords: ["headphone", "headset", "earphone"], url: "/images/wireless-headphones.jpg" },
+                { keywords: ["speaker"], url: "/images/bluetooth-speaker.jpg" },
+                { keywords: ["backpack", "laptop bag"], url: "/images/laptop-backpack.jpg" },
+                { keywords: ["keyboard"], url: "/images/mechanical-keyboard.jpg" },
+                { keywords: ["charger"], url: "/images/phone-charger.jpg" },
+                { keywords: ["powerbank", "power bank"], url: "/images/powerbank.jpg" },
+                { keywords: ["smartwatch", "smart watch"], url: "/images/smartwatch.jpg" },
+                { keywords: ["tablet", "ipad"], url: "/images/tablet.jpg" },
+                { keywords: ["flash drive", "usb drive", "pendrive"], url: "/images/usb-flash-drive.jpg" },
+                { keywords: ["mouse"], url: "/images/wireless-mouse.jpg" }
+            ];
+
+            for (const mapping of mappings) {
+                if (mapping.keywords.some(function(keyword) {
+                    return name.includes(keyword);
+                })) {
+                    return mapping.url;
+                }
+            }
+
+            return null;
+        }
+
+        function getProductImageUrl(product) {
+            const localImage = getLocalImageForProduct(product);
+            if (localImage) return localImage;
+
+            const savedUrl = String(product.imageUrl || "").trim();
+
+            if (savedUrl &&
+                !savedUrl.includes("placehold.co") &&
+                !savedUrl.includes("via.placeholder.com")) {
+                return savedUrl;
+            }
+
+            return "/images/wireless-headphones.jpg";
+        }
+
+        function handleProductImageError(image) {
+            const product = products.find(function(item) {
+                return Number(item.id) === Number(image.dataset.productId);
+            });
+
+            const localImage = product ? getLocalImageForProduct(product) : null;
+
+            if (localImage && image.src.endsWith(localImage) && product) {
+                const savedUrl = String(product.imageUrl || "").trim();
+
+                if (savedUrl &&
+                    !savedUrl.includes("placehold.co") &&
+                    !savedUrl.includes("via.placeholder.com") &&
+                    savedUrl !== localImage &&
+                    image.dataset.savedUrlAttempted !== "true") {
+                    image.dataset.savedUrlAttempted = "true";
+                    image.src = savedUrl;
+                    return;
+                }
+            }
+
+            if (image.dataset.genericFallbackAttempted !== "true") {
+                image.dataset.genericFallbackAttempted = "true";
+                image.src = "/images/wireless-headphones.jpg";
+                return;
+            }
+
+            image.onerror = null;
+            image.style.display = "none";
+
+            const wrapper = image.closest(".product-image-wrap");
+
+            if (wrapper && !wrapper.querySelector(".image-fallback")) {
+                const fallback = document.createElement("div");
+                fallback.className = "image-fallback";
+                fallback.textContent = "Image unavailable";
+                fallback.style.cssText =
+                    "position:absolute;inset:0;display:flex;align-items:center;" +
+                    "justify-content:center;color:#6b7280;font-size:13px;background:#f9fafb;";
+                wrapper.appendChild(fallback);
+            }
+        }
+
+        function renderProducts(list) {
+            const grid = document.getElementById("productsGrid");
+
+            if (!Array.isArray(list) || list.length === 0) {
+                grid.innerHTML = '<div class="empty-state">No products found. Try another search.</div>';
+                return;
+            }
+
+            grid.innerHTML = list.map(function(product) {
+                const id = Number(product.id);
+                const price = Number(product.price) || 0;
+                const stock = Math.max(0, Number(product.stockQuantity) || 0);
+                const imageUrl = escapeHtml(getProductImageUrl(product));
+                const name = escapeHtml(product.name || "Product");
+                const description = escapeHtml(
+                    product.description || "Quality product from NaijaMart."
+                );
+                const outOfStock = stock <= 0;
+
+                return `
+                    <article class="product-card">
+                        <div class="product-image-wrap">
+                            <span class="stock-badge ${outOfStock ? "out-of-stock" : ""}">
+                                ${outOfStock ? "Out of Stock" : "In Stock"}
+                            </span>
+                            <img class="product-image"
+                                src="${imageUrl}"
+                                alt="${name}"
+                                loading="lazy"
+                                data-product-id="${id}"
+                                onerror="handleProductImageError(this)">
+                        </div>
+                        <div class="product-details">
+                            <h3>${name}</h3>
+                            <p class="product-description">${description}</p>
+                            <div class="product-price">${money(price)}</div>
+                            <p class="stock-text">
+                                ${outOfStock ? "Currently unavailable" : stock + " unit(s) available"}
+                            </p>
+                            <button type="button" class="add-to-cart"
+                                ${outOfStock ? "disabled" : ""}
+                                onclick="addToCart(${id})">
+                                ${outOfStock ? "Out of Stock" : "Add to Cart"}
+                            </button>
+                        </div>
+                    </article>
+                `;
+            }).join("");
+        }
+
+        async function loadProducts(search = "") {
+            const grid = document.getElementById("productsGrid");
+            grid.innerHTML = '<div class="empty-state">Loading products...</div>';
+            clearNotice("productsNotice");
+
+            try {
+                const url = search.trim()
+                    ? API_BASE + "/products?search=" + encodeURIComponent(search.trim())
+                    : API_BASE + "/products";
+
+                const response = await fetch(url);
+
+                if (!response.ok) {
+                    throw new Error("Could not load products. HTTP " + response.status);
+                }
+
+                const data = await response.json();
+
+                if (!Array.isArray(data)) {
+                    throw new Error("The products API did not return a product list.");
+                }
+
+                products = data;
+                renderProducts(products);
+                syncCartWithProducts();
+            } catch (error) {
+                console.error("Product loading error:", error);
+                grid.innerHTML = `
+                    <div class="empty-state">
+                        Could not load products from the server.<br>
+                        Make sure NaijaMart is running, then refresh this page.
+                    </div>
+                `;
+                showNotice("productsNotice", error.message || "Unable to load products.", "error");
+            }
+        }
+
+        function syncCartWithProducts() {
+            cart = cart.map(function(item) {
+                const product = products.find(function(p) {
+                    return Number(p.id) === Number(item.id);
+                });
+
+                if (!product) return item;
+
+                const stock = Math.max(0, Number(product.stockQuantity) || 0);
+
+                return {
+                    id: Number(product.id),
+                    name: product.name,
+                    price: Number(product.price) || 0,
+                    stockQuantity: stock,
+                    quantity: Math.min(item.quantity, stock)
+                };
+            }).filter(function(item) {
+                return item.quantity > 0;
+            });
+
+            saveCart();
+            renderCart();
+        }
+
+        function addToCart(productId) {
+            const product = products.find(function(item) {
+                return Number(item.id) === Number(productId);
+            });
+
+            if (!product) {
+                alert("This product could not be found. Refresh the page and try again.");
+                return;
+            }
+
+            const stock = Math.max(0, Number(product.stockQuantity) || 0);
+
+            if (stock < 1) {
+                alert("Sorry, this product is out of stock.");
+                return;
+            }
+
+            const existing = cart.find(function(item) {
+                return Number(item.id) === Number(productId);
+            });
+
+            if (existing) {
+                if (existing.quantity >= stock) {
+                    alert("You cannot add more than the available stock.");
+                    return;
+                }
+                existing.quantity += 1;
+            } else {
+                cart.push({
+                    id: Number(product.id),
+                    name: product.name,
+                    price: Number(product.price) || 0,
+                    stockQuantity: stock,
+                    quantity: 1
+                });
+            }
+
+            saveCart();
+            renderCart();
+            showNotice("productsNotice", product.name + " added to your cart.", "success");
+        }
+
+        function changeQuantity(productId, change) {
+            const item = cart.find(function(entry) {
+                return Number(entry.id) === Number(productId);
+            });
+
+            if (!item) return;
+
+            const nextQuantity = item.quantity + change;
+
+            if (nextQuantity < 1) {
+                removeFromCart(productId);
+                return;
+            }
+
+            if (nextQuantity > item.stockQuantity) {
+                alert("Only " + item.stockQuantity + " unit(s) are available.");
+                return;
+            }
+
+            item.quantity = nextQuantity;
+            saveCart();
+            renderCart();
+        }
+
+        function removeFromCart(productId) {
+            cart = cart.filter(function(item) {
+                return Number(item.id) !== Number(productId);
+            });
+
+            saveCart();
+            renderCart();
+        }
+
+        function calculateCartTotal() {
+            return cart.reduce(function(total, item) {
+                return total + item.price * item.quantity;
+            }, 0);
+        }
+
+        /* FIXED: Cart HTML templates and missing quotation marks. */
+        function renderCart() {
+            const cartItems = document.getElementById("cartItems");
+            const count = cart.reduce(function(total, item) {
+                return total + item.quantity;
+            }, 0);
+
+            document.getElementById("cartCount").textContent = count;
+            document.getElementById("cartTotal").textContent = money(calculateCartTotal());
+
+            if (cart.length === 0) {
+                cartItems.innerHTML = `
+                    <div class="empty-state">
+                        Your cart is empty.<br>
+                        Go to Shop and add products to begin.<br><br>
+                        <button type="button" class="secondary-button"
+                            onclick="showView('shopView')">Browse Products</button>
+                    </div>
+                `;
+                return;
+            }
+
+            cartItems.innerHTML = cart.map(function(item) {
+                return `
+                    <div class="cart-item">
+                        <div class="cart-item-info">
+                            <strong>${escapeHtml(item.name)}</strong>
+                            <small>${money(item.price)} each</small>
+                            <div class="quantity-controls">
+                                <button type="button" aria-label="Decrease quantity"
+                                    onclick="changeQuantity(${item.id}, -1)">−</button>
+                                <span>${item.quantity}</span>
+                                <button type="button" aria-label="Increase quantity"
+                                    onclick="changeQuantity(${item.id}, 1)">+</button>
+                            </div>
+                        </div>
+                        <div>
+                            <strong>${money(item.price * item.quantity)}</strong><br>
+                            <button type="button" class="remove-item"
+                                onclick="removeFromCart(${item.id})">Remove</button>
+                        </div>
+                    </div>
+                `;
+            }).join("");
+        }
+
+        /* Customer login */
+        document.getElementById("loginForm").addEventListener("submit", async function(event) {
+            event.preventDefault();
+            clearNotice("loginNotice");
+
+            const button = document.getElementById("loginButton");
+            const email = document.getElementById("loginEmail").value.trim();
+            const password = document.getElementById("loginPassword").value;
+
+            if (!email || !password) {
+                showNotice("loginNotice", "Enter your email address and password.", "error");
+                return;
+            }
+
+            button.disabled = true;
+            button.textContent = "Signing In...";
+
+            try {
+                const response = await fetch(API_BASE + "/users/login", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ email: email, password: password })
+                });
+
+                const responseText = await response.text();
+                let data = {};
+
+                try {
+                    data = responseText ? JSON.parse(responseText) : {};
+                } catch {
+                    data = {};
+                }
+
+                if (!response.ok) {
+                    throw new Error(
+                        data.message || data.error ||
+                        "Login failed. Check your email and password."
+                    );
+                }
+
+                saveLoginSession(data, email);
+                document.getElementById("loginPassword").value = "";
+
+                showNotice("loginNotice", "Login successful. Welcome to NaijaMart!", "success");
+                showView("shopView");
+            } catch (error) {
+                console.error("Login error:", error);
+                showNotice(
+                    "loginNotice",
+                    error.message || "Unable to log in. Please try again.",
+                    "error"
+                );
+            } finally {
+                button.disabled = false;
+                button.textContent = "Sign In";
+            }
+        });
+
+        /* Product search */
+        document.getElementById("searchForm").addEventListener("submit", function(event) {
+            event.preventDefault();
+            const search = document.getElementById("searchInput").value.trim();
+            showView("shopView");
+            loadProducts(search);
+        });
+
+        /* Login and registration screen controls */
+        const authOptions = document.getElementById("authOptions");
+        const signupPanel = document.getElementById("signupPanel");
+        const signupForm = document.getElementById("signupForm");
+        const signupButton = document.getElementById("signupButton");
+        const loginFormElement = document.getElementById("loginForm");
+        const loginHeadingElement = document.getElementById("loginHeading");
+        const loginDividerElement = document.getElementById("loginDivider");
+        const googleLoginButtonElement = document.getElementById("googleLoginButton");
+
+        function showSignupScreen() {
+            authOptions.hidden = true;
+            signupPanel.hidden = false;
+            loginFormElement.hidden = true;
+            loginHeadingElement.hidden = true;
+            loginDividerElement.hidden = true;
+            googleLoginButtonElement.hidden = true;
+
+            clearNotice("loginNotice");
+            clearNotice("signupNotice");
+        }
+
+        function showLoginScreen() {
+            authOptions.hidden = true;
+            signupPanel.hidden = true;
+            loginFormElement.hidden = false;
+            loginHeadingElement.hidden = false;
+            loginDividerElement.hidden = false;
+            googleLoginButtonElement.hidden = false;
+
+            clearNotice("signupNotice");
+            clearNotice("loginNotice");
+        }
+
+        function showAuthOptions() {
+            authOptions.hidden = false;
+            signupPanel.hidden = true;
+            loginFormElement.hidden = true;
+            loginHeadingElement.hidden = true;
+            loginDividerElement.hidden = true;
+            googleLoginButtonElement.hidden = true;
+
+            clearNotice("signupNotice");
+            clearNotice("loginNotice");
+        }
+
+        document.getElementById("showSignupButton").addEventListener(
+            "click", showSignupScreen
+        );
+
+        document.getElementById("showLoginButton").addEventListener(
+            "click", showLoginScreen
+        );
+
+        document.getElementById("showLoginOption").addEventListener(
+            "click", showLoginScreen
+        );
+
+        /*
+         * FIXED: Customer registration submit handler.
+         * Sends the registration details to POST /api/users.
+         */
+        signupForm.addEventListener("submit", async function(event) {
+            event.preventDefault();
+            clearNotice("signupNotice");
+
+            const firstName = document.getElementById("signupFirstName").value.trim();
+            const lastName = document.getElementById("signupLastName").value.trim();
+            const email = document.getElementById("signupEmail").value.trim();
+            const phone = document.getElementById("signupPhone").value.trim();
+            const address = document.getElementById("signupAddress").value.trim();
+            const password = document.getElementById("signupPassword").value;
+            const confirmPassword = document.getElementById("signupConfirmPassword").value;
+
+            if (!firstName || !lastName || !email || !password || !confirmPassword) {
+                showNotice(
+                    "signupNotice",
+                    "Please complete all required fields.",
+                    "error"
+                );
+                return;
+            }
+
+            if (password.length < 8) {
+                showNotice(
+                    "signupNotice",
+                    "Your password must contain at least 8 characters.",
+                    "error"
+                );
+                return;
+            }
+
+            if (password !== confirmPassword) {
+                showNotice(
+                    "signupNotice",
+                    "Your passwords do not match. Please try again.",
+                    "error"
+                );
+                return;
+            }
+
+            signupButton.disabled = true;
+            signupButton.textContent = "Creating Account...";
+
+            try {
+                const response = await fetch(API_BASE + "/users", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        firstName: firstName,
+                        lastName: lastName,
+                        email: email,
+                        password: password,
+                        phone: phone,
+                        address: address
+                    })
+                });
+
+                const responseText = await response.text();
+                let data = {};
+
+                try {
+                    data = responseText ? JSON.parse(responseText) : {};
+                } catch {
+                    data = {};
+                }
+
+                if (!response.ok) {
+                    throw new Error(
+                        data.message ||
+                        data.error ||
+                        (response.status === 409
+                            ? "An account with this email already exists."
+                            : "Registration failed. HTTP " + response.status)
+                    );
+                }
+
+                signupForm.reset();
+                showLoginScreen();
+
+                document.getElementById("loginEmail").value = email;
+
+                showNotice(
+                    "loginNotice",
+                    "Your account was created successfully. Please sign in with your email and password.",
+                    "success"
+                );
+            } catch (error) {
+                console.error("Registration error:", error);
+
+                showNotice(
+                    "signupNotice",
+                    error.message || "Unable to create your account. Please try again.",
+                    "error"
+                );
+            } finally {
+                signupButton.disabled = false;
+                signupButton.textContent = "Create Account";
+            }
+        });
+
+       
+/* Checkout and simulated payment */
+document.getElementById("checkoutForm").addEventListener("submit", async function(event) {
+    event.preventDefault();
+    clearNotice("checkoutNotice");
+
+    if (cart.length === 0) {
+        showNotice(
+            "checkoutNotice",
+            "Your cart is empty. Please add a product before checking out.",
+            "error"
+        );
+        return;
+    }
+
+    const button = document.getElementById("placeOrderButton");
+
+    // Read the checkout form fields.
+    const customerName = document.getElementById("customerName").value.trim();
+    const customerEmail = document.getElementById("customerEmail").value.trim();
+    const customerPhone = document.getElementById("customerPhone").value.trim();
+    const deliveryAddress = document.getElementById("deliveryAddress").value.trim();
+
+    // Validate the correct field names.
+    if (!customerName || !customerEmail || !customerPhone || !deliveryAddress) {
+        showNotice(
+            "checkoutNotice",
+            "Please enter your full name, email address, phone number, and delivery address.",
+            "error"
+        );
+        return;
+    }
+
+    // Build the request using the CheckoutRequest field names.
+    const requestBody = {
+        customerName: customerName,
+        customerEmail: customerEmail,
+        customerPhone: customerPhone,
+        deliveryAddress: deliveryAddress,
+        items: cart.map(function(item) {
+            return {
+                productId: Number(item.id),
+                quantity: Number(item.quantity)
+            };
+        })
+    };
+
+    // Validate the items before sending the order.
+    if (
+        requestBody.items.length === 0 ||
+        requestBody.items.some(function(item) {
+            return !Number.isInteger(item.productId) ||
+                item.productId <= 0 ||
+                !Number.isInteger(item.quantity) ||
+                item.quantity <= 0;
+        })
+    ) {
+        showNotice(
+            "checkoutNotice",
+            "Your cart contains an invalid product or quantity. Please remove the item and add it again.",
+            "error"
+        );
+        return;
+    }
+
+    button.disabled = true;
+    button.textContent = "Placing Order...";
+
+    try {
+        const response = await fetch(API_BASE + "/orders", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/json",
+                ...getAuthHeaders()
+            },
+            body: JSON.stringify(requestBody)
+        });
+
+        const responseText = await response.text();
+        let data = {};
+
+        try {
+            data = responseText ? JSON.parse(responseText) : {};
+        } catch {
+            data = {};
+        }
+
+        if (!response.ok) {
+            console.error("Checkout response from server:", data);
+
+            let errorMessage =
+                data.detail ||
+                data.message ||
+                data.error ||
+                "";
+
+            // Show individual validation errors when the backend provides them.
+            if (Array.isArray(data.errors) && data.errors.length > 0) {
+                errorMessage = data.errors.map(function(error) {
+                    if (typeof error === "string") {
+                        return error;
+                    }
+
+                    const field = error.field || error.property || "";
+                    const message =
+                        error.defaultMessage ||
+                        error.message ||
+                        error.detail ||
+                        "Invalid value";
+
+                    return field ? field + ": " + message : message;
+                }).join(" ");
+            }
+
+            // Some Spring Boot validation responses use a different structure.
+            if (!errorMessage && Array.isArray(data.fieldErrors)) {
+                errorMessage = data.fieldErrors.map(function(error) {
+                    return (error.field || "Field") + ": " +
+                        (error.defaultMessage || error.message || "Invalid value");
+                }).join(" ");
+            }
+
+            if (!errorMessage) {
+                errorMessage = "Order submission failed. HTTP " + response.status +
+                    (responseText ? ". " + responseText : "");
+            }
+
+            throw new Error(errorMessage);
+        }
+
+        // Check that the backend returned the required order details.
+        const orderId = data.orderId ?? data.id;
+        const trackingNumber = data.trackingNumber;
+
+        if (orderId == null || !trackingNumber) {
+            console.error("Unexpected order response:", data);
+
+            throw new Error(
+                "The order response is missing its order ID or tracking number. " +
+                "Please check OrderController.java and the server response."
+            );
+        }
+
+        pendingPaymentOrder = {
+            orderId: orderId,
+            trackingNumber: trackingNumber,
+            amount: data.totalAmount ?? calculateCartTotal()
+        };
+
+        document.getElementById("paymentAmount").textContent =
+            money(pendingPaymentOrder.amount);
+
+        clearNotice("paymentNotice");
+
+        // Clear the cart only after the server successfully creates the order.
+        cart = [];
+        saveCart();
+        renderCart();
+
+        document.getElementById("checkoutForm").reset();
+        prefillCheckoutEmail();
+
+        showView("paymentView");
+        await loadProducts();
+
+    } catch (error) {
+        console.error("Checkout error:", error);
+
+        showNotice(
+            "checkoutNotice",
+            error.message || "Could not place your order. Please try again.",
+            "error"
+        );
+    } finally {
+        button.disabled = false;
+        button.textContent = "Place Order";
+    }
+});
+
+        /*
+         * This calls your backend's simulated-payment endpoint.
+         * It must exist at POST /api/demo-payments/success.
+         */
+        document.getElementById("simulatePaymentButton").addEventListener("click", async function() {
+            clearNotice("paymentNotice");
+
+            if (!pendingPaymentOrder) {
+                showNotice(
+                    "paymentNotice",
+                    "No pending payment was found. Please start checkout again.",
+                    "error"
+                );
+                return;
+            }
+
+            const button = document.getElementById("simulatePaymentButton");
+            const cancelButton = document.getElementById("cancelPaymentButton");
+
+            button.disabled = true;
+            cancelButton.disabled = true;
+            button.textContent = "Processing Payment...";
+
+            try {
+                const response = await fetch(API_BASE + "/demo-payments/success", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        ...getAuthHeaders()
+                    },
+                    body: JSON.stringify({
+                        orderId: pendingPaymentOrder.orderId
+                    })
+                });
+
+                const responseText = await response.text();
+                let data = {};
+
+                try {
+                    data = responseText ? JSON.parse(responseText) : {};
+                } catch {
+                    data = {};
+                }
+
+                if (!response.ok) {
+                    throw new Error(
+                        data.message || data.error || responseText ||
+                        "Simulated payment failed. HTTP " + response.status
+                    );
+                }
+
+                if (data.simulated !== true || !data.trackingNumber) {
+                    throw new Error(
+                        "The server response did not confirm the simulated payment. Check your server logs."
+                    );
+                }
+
+                document.getElementById("trackingNumber").value = data.trackingNumber;
+                document.getElementById("trackingResult").innerHTML = "";
+
+                showView("trackingView");
+
+                showNotice(
+                    "trackingNotice",
+                    "Simulated payment successful — no real money was charged. " +
+                    "Your order is confirmed. Tracking number: " +
+                    data.trackingNumber + ". Total: " +
+                    money(data.totalAmount ?? pendingPaymentOrder.amount) +
+                    ". Check your inbox for your order confirmation email.",
+                    "success"
+                );
+
+                pendingPaymentOrder = null;
+                await loadProducts();
+            } catch (error) {
+                console.error("Simulated payment error:", error);
+
+                showNotice(
+                    "paymentNotice",
+                    error.message || "Simulated payment failed. Please try again.",
+                    "error"
+                );
+            } finally {
+                button.disabled = false;
+                cancelButton.disabled = false;
+                button.textContent = "Simulate Successful Payment";
+            }
+        });
+
+        document.getElementById("cancelPaymentButton").addEventListener("click", function() {
+            showView("shopView");
+        });
+
+        /* Order tracking */
+        document.getElementById("trackingForm").addEventListener("submit", async function(event) {
+            event.preventDefault();
+            clearNotice("trackingNotice");
+            document.getElementById("trackingResult").innerHTML = "";
+
+            const trackingNumber = document.getElementById("trackingNumber").value.trim();
+
+            if (!trackingNumber) {
+                showNotice("trackingNotice", "Please enter your tracking number.", "error");
+                return;
+            }
+
+            try {
+                const response = await fetch(
+                    API_BASE + "/orders/track/" + encodeURIComponent(trackingNumber),
+                    { headers: getAuthHeaders() }
+                );
+
+                const responseText = await response.text();
+                let data = {};
+
+                try {
+                    data = responseText ? JSON.parse(responseText) : {};
+                } catch {
+                    data = {};
+                }
+
+                if (!response.ok) {
+                    throw new Error(
+                        data.message || data.error ||
+                        "Order not found. Check the tracking number."
+                    );
+                }
+
+                const orderDate = data.createdAt
+                    ? new Date(data.createdAt).toLocaleString()
+                    : "Not available";
+
+                document.getElementById("trackingResult").innerHTML = `
+                    <div class="tracking-result">
+                        <h3>Order Found</h3>
+                        <p><strong>Tracking Number:</strong>
+                            ${escapeHtml(data.trackingNumber || trackingNumber)}</p>
+                        <p><strong>Status:</strong>
+                            ${escapeHtml(data.status || "Processing")}</p>
+                        <p><strong>Total Amount:</strong>
+                            ${money(data.totalAmount)}</p>
+                        <p><strong>Order Date:</strong>
+                            ${escapeHtml(orderDate)}</p>
+                    </div>
+                `;
+
+                clearNotice("trackingNotice");
+            } catch (error) {
+                showNotice(
+                    "trackingNotice",
+                    error.message || "Could not track this order.",
+                    "error"
+                );
+            }
+        });
+
+        /* Start the page */
+        document.getElementById("year").textContent = new Date().getFullYear();
+
+        showAuthOptions();
+        updateLoginInterface();
+        prefillCheckoutEmail();
+        renderCart();
+        loadProducts();
+        handleGoogleLoginCallback();
+    </script>
+</body>
+</html>

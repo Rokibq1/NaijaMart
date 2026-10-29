@@ -1,0 +1,1279 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NaijaMart Admin Dashboard</title>
+
+    <style>
+        :root {
+            --green: #087443;
+            --green-dark: #055b34;
+            --orange: #f5a623;
+            --background: #f4f7f5;
+            --white: #ffffff;
+            --text: #24332b;
+            --muted: #68766e;
+            --border: #dfe7e1;
+            --red: #c62828;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            font-family: Arial, Helvetica, sans-serif;
+            background: var(--background);
+            color: var(--text);
+        }
+
+        button, input, textarea, select { font: inherit; }
+
+        button {
+            cursor: pointer;
+            border: 0;
+            border-radius: 7px;
+            padding: 11px 15px;
+            font-weight: 700;
+        }
+
+        button:disabled {
+            opacity: .55;
+            cursor: not-allowed;
+        }
+
+        .primary { background: var(--green); color: white; }
+        .primary:hover { background: var(--green-dark); }
+        .secondary { background: #e9efeb; color: var(--text); }
+        .danger { background: #ffebee; color: var(--red); }
+        .orange { background: var(--orange); color: #302000; }
+
+        .topbar {
+            background: var(--green);
+            color: white;
+            padding: 17px 5%;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .brand { font-size: 22px; font-weight: 800; }
+        .brand span { color: var(--orange); }
+        .topbar small { color: #d8eee0; }
+
+        .container {
+            max-width: 1400px;
+            margin: 28px auto;
+            padding: 0 18px;
+        }
+
+        .panel {
+            background: var(--white);
+            padding: 24px;
+            border: 1px solid var(--border);
+            border-radius: 13px;
+            box-shadow: 0 3px 14px #183d2510;
+            margin-bottom: 22px;
+        }
+
+        h1, h2, h3 { margin-top: 0; }
+        h1 { font-size: 27px; }
+        h2 { font-size: 20px; }
+        .muted { color: var(--muted); line-height: 1.6; }
+        .hidden { display: none !important; }
+
+        .login-wrap {
+            max-width: 460px;
+            margin: 55px auto;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 16px;
+        }
+
+        .field { display: flex; flex-direction: column; gap: 7px; }
+        .field.full { grid-column: 1 / -1; }
+        label { font-size: 13px; font-weight: 700; }
+
+        input, textarea, select {
+            width: 100%;
+            border: 1px solid #cfdad2;
+            border-radius: 7px;
+            padding: 11px;
+            background: white;
+            color: var(--text);
+        }
+
+        input:focus, textarea:focus, select:focus {
+            outline: 2px solid #08744330;
+            border-color: var(--green);
+        }
+
+        textarea { min-height: 90px; resize: vertical; }
+
+        .actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 18px;
+        }
+
+        .notice {
+            border-radius: 8px;
+            padding: 12px 14px;
+            margin: 15px 0;
+            line-height: 1.5;
+            overflow-wrap: anywhere;
+        }
+
+        .notice.error { background: #ffebee; color: #9b1c1c; }
+        .notice.success { background: #e7f6ec; color: #075c2e; }
+        .notice.info { background: #eaf2ff; color: #174b88; }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 16px;
+            margin-bottom: 22px;
+        }
+
+        .stat {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+        }
+
+        .stat .number {
+            display: block;
+            font-size: 28px;
+            font-weight: 800;
+            margin-top: 8px;
+            color: var(--green);
+        }
+
+        .toolbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 17px;
+        }
+
+        .search { max-width: 330px; }
+        .table-wrap { overflow-x: auto; }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            min-width: 760px;
+        }
+
+        th, td {
+            text-align: left;
+            padding: 13px 12px;
+            border-bottom: 1px solid var(--border);
+            vertical-align: top;
+        }
+
+        th {
+            background: #f5f8f5;
+            color: #435349;
+            font-size: 12px;
+            text-transform: uppercase;
+        }
+
+        td { font-size: 14px; }
+        .product-name { font-weight: 700; }
+        .stock-low { color: #b45309; font-weight: 700; }
+        .stock-ok { color: var(--green); font-weight: 700; }
+
+        .table-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 7px;
+        }
+
+        .table-actions button {
+            padding: 8px 10px;
+            font-size: 12px;
+        }
+
+        .section-note {
+            font-size: 13px;
+            color: var(--muted);
+            line-height: 1.5;
+        }
+
+        .order-items {
+            min-width: 180px;
+            line-height: 1.7;
+        }
+
+        .order-status-select {
+            min-width: 145px;
+            margin-bottom: 8px;
+        }
+
+        .tracking-number {
+            font-weight: 800;
+            color: var(--green);
+            overflow-wrap: anywhere;
+        }
+
+        .status-label {
+            display: inline-block;
+            border-radius: 20px;
+            padding: 5px 9px;
+            font-size: 11px;
+            font-weight: 800;
+            background: #e9efeb;
+            color: #34463a;
+        }
+
+        footer {
+            text-align: center;
+            color: var(--muted);
+            font-size: 13px;
+            padding: 25px 15px;
+        }
+
+        @media (max-width: 650px) {
+            .container { margin-top: 18px; padding: 0 12px; }
+            .panel { padding: 17px; }
+            .form-grid, .stats { grid-template-columns: 1fr; }
+            .field.full { grid-column: auto; }
+            h1 { font-size: 23px; }
+            .topbar { padding: 15px; }
+        }
+    </style>
+</head>
+
+<body>
+<header class="topbar">
+    <div>
+        <div class="brand">Naija<span>Mart</span> Admin</div>
+        <small>Products, inventory and order management</small>
+    </div>
+
+    <div class="actions" style="margin:0">
+        <a href="/" style="color:white;align-self:center;margin-right:8px">
+            View shop
+        </a>
+        <button id="logoutButton" class="orange hidden" type="button">
+            Log out
+        </button>
+    </div>
+</header>
+
+<main class="container">
+
+    <!-- ADMIN LOGIN -->
+    <section id="loginSection" class="login-wrap panel">
+        <h1>Administrator login</h1>
+        <p class="muted">
+            Sign in with an existing NaijaMart administrator account.
+            Customer accounts cannot access this dashboard.
+        </p>
+
+        <form id="loginForm">
+            <div class="field">
+                <label for="loginEmail">Email address</label>
+                <input id="loginEmail" type="email"
+                       autocomplete="username" required>
+            </div>
+
+            <div class="field" style="margin-top:15px">
+                <label for="loginPassword">Password</label>
+                <input id="loginPassword" type="password"
+                       autocomplete="current-password" required>
+            </div>
+
+            <div class="actions">
+                <button id="loginButton" class="primary" type="submit">
+                    Sign in
+                </button>
+            </div>
+        </form>
+
+        <div id="loginMessage" aria-live="polite"></div>
+    </section>
+
+    <!-- ADMIN DASHBOARD -->
+    <section id="dashboardSection" class="hidden">
+
+        <section class="panel">
+            <h1>Admin dashboard</h1>
+            <p class="muted">
+                Manage products, inventory, customer orders and deliveries.
+            </p>
+            <p id="welcomeText" class="section-note"></p>
+            <div id="dashboardMessage" aria-live="polite"></div>
+        </section>
+
+        <!-- INVENTORY STATISTICS -->
+        <div class="stats">
+            <div class="stat">
+                <span class="muted">Active products loaded</span>
+                <span id="totalProducts" class="number">0</span>
+            </div>
+
+            <div class="stat">
+                <span class="muted">Products low in stock</span>
+                <span id="lowStockProducts" class="number">0</span>
+            </div>
+
+            <div class="stat">
+                <span class="muted">Units currently in stock</span>
+                <span id="totalUnits" class="number">0</span>
+            </div>
+        </div>
+
+        <!-- ADD / EDIT PRODUCT -->
+        <section class="panel" id="productFormPanel">
+            <h2 id="productFormTitle">Add a product</h2>
+            <p class="section-note">
+                Use a full image URL or a local path such as
+                /images/hp-laptop.jpg.
+            </p>
+
+            <form id="productForm">
+                <input type="hidden" id="productId">
+
+                <div class="form-grid">
+                    <div class="field">
+                        <label for="productName">Product name *</label>
+                        <input id="productName" maxlength="180" required>
+                    </div>
+
+                    <div class="field">
+                        <label for="productPrice">Price (₦) *</label>
+                        <input id="productPrice" type="number"
+                               min="0.01" step="0.01" required>
+                    </div>
+
+                    <div class="field">
+                        <label for="productStock">Stock quantity *</label>
+                        <input id="productStock" type="number"
+                               min="0" step="1" required>
+                    </div>
+
+                    <div class="field">
+                        <label for="productImage">Image URL or path</label>
+                        <input id="productImage" maxlength="1000"
+                               placeholder="/images/samsung-phone.jpg">
+                    </div>
+
+                    <div class="field full">
+                        <label for="productDescription">Description</label>
+                        <textarea id="productDescription"
+                                  maxlength="5000"></textarea>
+                    </div>
+                </div>
+
+                <div class="actions">
+                    <button id="saveProductButton" class="primary" type="submit">
+                        Add product
+                    </button>
+                    <button id="cancelEditButton"
+                            class="secondary hidden" type="button">
+                        Cancel editing
+                    </button>
+                </div>
+            </form>
+        </section>
+
+        <!-- PRODUCT INVENTORY -->
+        <section class="panel">
+            <div class="toolbar">
+                <div>
+                    <h2 style="margin-bottom:5px">Product inventory</h2>
+                    <span class="section-note">
+                        Edit products or add stock.
+                    </span>
+                </div>
+
+                <input id="searchInput" class="search"
+                       type="search" placeholder="Search products...">
+            </div>
+
+            <div class="actions" style="margin:0 0 16px">
+                <button id="refreshButton" class="secondary" type="button">
+                    Refresh products
+                </button>
+            </div>
+
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Product</th>
+                        <th>Price</th>
+                        <th>Stock</th>
+                        <th>Actions</th>
+                    </tr>
+                    </thead>
+
+                    <tbody id="productsTableBody">
+                    <tr>
+                        <td colspan="5">Sign in to load products.</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- NEW ORDER MANAGEMENT SECTION -->
+        <section class="panel" id="ordersPanel">
+            <div class="toolbar">
+                <div>
+                    <h2 style="margin-bottom:5px">Customer orders</h2>
+                    <span class="section-note">
+                        View purchases, tracking details and delivery status.
+                    </span>
+                </div>
+
+                <button id="refreshOrdersButton"
+                        class="primary" type="button">
+                    Refresh orders
+                </button>
+            </div>
+
+            <div id="ordersMessage" aria-live="polite"></div>
+
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                    <tr>
+                        <th>Order</th>
+                        <th>Customer</th>
+                        <th>Delivery address</th>
+                        <th>Items ordered</th>
+                        <th>Total</th>
+                        <th>Date</th>
+                        <th>Status</th>
+                        <th>Update status</th>
+                    </tr>
+                    </thead>
+
+                    <tbody id="ordersTableBody">
+                    <tr>
+                        <td colspan="8">
+                            Sign in to load customer orders.
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <p class="section-note">
+                Cancelling an order restores its product quantities using
+                the backend order service. Check the stock after cancellation.
+            </p>
+        </section>
+
+    </section>
+</main>
+
+<footer>NaijaMart Admin Dashboard</footer>
+
+<script>
+"use strict";
+
+const $ = id => document.getElementById(id);
+
+const TOKEN_KEY = "naijamart_admin_token";
+const EMAIL_KEY = "naijamart_admin_email";
+
+let products = [];
+let searchTerm = "";
+let orders = [];
+
+const ORDER_STATUSES = [
+    "PENDING",
+    "CONFIRMED",
+    "PROCESSING",
+    "SHIPPED",
+    "DELIVERED",
+    "CANCELLED"
+];
+
+function getToken() {
+    return sessionStorage.getItem(TOKEN_KEY);
+}
+
+function showMessage(elementId, message, type = "info") {
+    const element = $(elementId);
+    element.replaceChildren();
+
+    if (!message) return;
+
+    const notice = document.createElement("div");
+    notice.className = "notice " + type;
+    notice.textContent = message;
+    element.appendChild(notice);
+}
+
+async function apiRequest(url, options = {}) {
+    const headers = new Headers(options.headers || {});
+    headers.set("Accept", "application/json");
+
+    if (getToken()) {
+        headers.set("Authorization", "Bearer " + getToken());
+    }
+
+    if (options.body !== undefined) {
+        headers.set("Content-Type", "application/json");
+    }
+
+    const response = await fetch(url, {
+        ...options,
+        headers
+    });
+
+    const text = await response.text();
+    let data = null;
+
+    if (text) {
+        try {
+            data = JSON.parse(text);
+        } catch {
+            data = text;
+        }
+    }
+
+    if (response.status === 401 || response.status === 403) {
+        throw new Error(
+            response.status === 403
+                ? "Access denied. Check that your account has the ADMIN role."
+                : "Your session is invalid or expired. Please sign in again."
+        );
+    }
+
+    if (!response.ok) {
+        const message = data && typeof data === "object"
+            ? data.message || data.error || data.detail
+            : data;
+
+        throw new Error(
+            message || "Request failed with HTTP " + response.status
+        );
+    }
+
+    return data;
+}
+
+function setLoggedInUI(isLoggedIn) {
+    $("loginSection").classList.toggle("hidden", isLoggedIn);
+    $("dashboardSection").classList.toggle("hidden", !isLoggedIn);
+    $("logoutButton").classList.toggle("hidden", !isLoggedIn);
+
+    if (isLoggedIn) {
+        $("welcomeText").textContent =
+            "Signed in as " +
+            (sessionStorage.getItem(EMAIL_KEY) || "Administrator");
+    }
+}
+
+function formatNaira(amount) {
+    const number = Number(amount);
+
+    if (!Number.isFinite(number)) return "₦0.00";
+
+    return "₦" + number.toLocaleString("en-NG", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+    });
+}
+
+function formatDate(dateValue) {
+    if (!dateValue) return "—";
+
+    const date = new Date(dateValue);
+
+    if (Number.isNaN(date.getTime())) {
+        return String(dateValue);
+    }
+
+    return date.toLocaleString("en-NG");
+}
+
+function addCell(row, value, className = "") {
+    const cell = document.createElement("td");
+    cell.textContent = value == null || value === "" ? "—" : String(value);
+
+    if (className) cell.className = className;
+
+    row.appendChild(cell);
+    return cell;
+}
+
+/* =========================
+   PRODUCT INVENTORY
+   ========================= */
+
+function updateStats() {
+    $("totalProducts").textContent = products.length;
+
+    $("lowStockProducts").textContent =
+        products.filter(p => Number(p.stockQuantity || 0) <= 5).length;
+
+    $("totalUnits").textContent =
+        products.reduce(
+            (sum, p) => sum + Math.max(0, Number(p.stockQuantity || 0)),
+            0
+        );
+}
+
+function renderProducts() {
+    const tbody = $("productsTableBody");
+    tbody.replaceChildren();
+
+    const filtered = products.filter(product =>
+        String(product.name || "")
+            .toLowerCase()
+            .includes(searchTerm.toLowerCase())
+    );
+
+    if (filtered.length === 0) {
+        const row = document.createElement("tr");
+        const cell = document.createElement("td");
+
+        cell.colSpan = 5;
+        cell.textContent = products.length
+            ? "No products match your search."
+            : "No products were returned by the API.";
+
+        row.appendChild(cell);
+        tbody.appendChild(row);
+        return;
+    }
+
+    filtered.forEach(product => {
+        const row = document.createElement("tr");
+
+        addCell(row, product.id);
+
+        const nameCell = document.createElement("td");
+        const name = document.createElement("div");
+
+        name.className = "product-name";
+        name.textContent = product.name || "Unnamed product";
+        nameCell.appendChild(name);
+
+        if (product.description) {
+            const description = document.createElement("div");
+            description.className = "section-note";
+            description.textContent = product.description;
+            nameCell.appendChild(description);
+        }
+
+        row.appendChild(nameCell);
+        addCell(row, formatNaira(product.price));
+
+        const stock = Number(product.stockQuantity || 0);
+        addCell(
+            row,
+            stock,
+            stock <= 5 ? "stock-low" : "stock-ok"
+        );
+
+        const actionsCell = document.createElement("td");
+        const actions = document.createElement("div");
+        actions.className = "table-actions";
+
+        const editButton = document.createElement("button");
+        editButton.className = "secondary";
+        editButton.textContent = "Edit";
+        editButton.type = "button";
+        editButton.addEventListener("click", () => startEdit(product));
+        actions.appendChild(editButton);
+
+        const restockButton = document.createElement("button");
+        restockButton.className = "orange";
+        restockButton.textContent = "Restock";
+        restockButton.type = "button";
+        restockButton.addEventListener(
+            "click",
+            () => restockProduct(product)
+        );
+        actions.appendChild(restockButton);
+
+        const deleteButton = document.createElement("button");
+        deleteButton.className = "danger";
+        deleteButton.textContent = "Delete";
+        deleteButton.type = "button";
+        deleteButton.addEventListener(
+            "click",
+            () => deleteProduct(product)
+        );
+        actions.appendChild(deleteButton);
+
+        actionsCell.appendChild(actions);
+        row.appendChild(actionsCell);
+        tbody.appendChild(row);
+    });
+}
+
+async function loadProducts() {
+    showMessage("dashboardMessage", "Loading products...", "info");
+
+    try {
+        const data = await apiRequest("/api/products");
+
+        if (!Array.isArray(data)) {
+            throw new Error(
+                "The products endpoint did not return a product list."
+            );
+        }
+
+        products = data;
+        updateStats();
+        renderProducts();
+
+        showMessage(
+            "dashboardMessage",
+            "Product inventory loaded successfully.",
+            "success"
+        );
+    } catch (error) {
+        showMessage("dashboardMessage", error.message, "error");
+    }
+}
+
+function resetProductForm() {
+    $("productForm").reset();
+    $("productId").value = "";
+    $("productFormTitle").textContent = "Add a product";
+    $("saveProductButton").textContent = "Add product";
+    $("cancelEditButton").classList.add("hidden");
+}
+
+function startEdit(product) {
+    $("productId").value = product.id;
+    $("productName").value = product.name || "";
+    $("productPrice").value = product.price ?? "";
+    $("productStock").value = product.stockQuantity ?? 0;
+    $("productImage").value = product.imageUrl || "";
+    $("productDescription").value = product.description || "";
+
+    $("productFormTitle").textContent = "Edit product #" + product.id;
+    $("saveProductButton").textContent = "Save changes";
+    $("cancelEditButton").classList.remove("hidden");
+
+    $("productFormPanel").scrollIntoView({
+        behavior: "smooth",
+        block: "start"
+    });
+}
+
+$("productForm").addEventListener("submit", async event => {
+    event.preventDefault();
+
+    const id = $("productId").value;
+    const price = Number($("productPrice").value);
+    const stockQuantity = Number($("productStock").value);
+
+    if (!Number.isFinite(price) || price <= 0) {
+        showMessage(
+            "dashboardMessage",
+            "Enter a price greater than zero.",
+            "error"
+        );
+        return;
+    }
+
+    if (!Number.isInteger(stockQuantity) || stockQuantity < 0) {
+        showMessage(
+            "dashboardMessage",
+            "Stock must be a whole number of zero or more.",
+            "error"
+        );
+        return;
+    }
+
+    const product = {
+        name: $("productName").value.trim(),
+        price,
+        stockQuantity,
+        imageUrl: $("productImage").value.trim(),
+        description: $("productDescription").value.trim()
+    };
+
+    if (!product.name) {
+        showMessage(
+            "dashboardMessage",
+            "Product name is required.",
+            "error"
+        );
+        return;
+    }
+
+    const button = $("saveProductButton");
+    button.disabled = true;
+
+    try {
+        if (id) {
+            await apiRequest(
+                "/api/products/" + encodeURIComponent(id),
+                {
+                    method: "PUT",
+                    body: JSON.stringify(product)
+                }
+            );
+
+            showMessage(
+                "dashboardMessage",
+                "Product updated successfully.",
+                "success"
+            );
+        } else {
+            await apiRequest("/api/products", {
+                method: "POST",
+                body: JSON.stringify(product)
+            });
+
+            showMessage(
+                "dashboardMessage",
+                "Product added successfully.",
+                "success"
+            );
+        }
+
+        resetProductForm();
+        await loadProducts();
+    } catch (error) {
+        showMessage("dashboardMessage", error.message, "error");
+    } finally {
+        button.disabled = false;
+    }
+});
+
+async function restockProduct(product) {
+    const answer = prompt(
+        "Current stock: " + Number(product.stockQuantity || 0) +
+        "\nEnter the number of units to add:"
+    );
+
+    if (answer === null) return;
+
+    const quantity = Number(answer);
+
+    if (!Number.isInteger(quantity) || quantity <= 0) {
+        showMessage(
+            "dashboardMessage",
+            "Enter a whole number greater than zero.",
+            "error"
+        );
+        return;
+    }
+
+    try {
+        await apiRequest(
+            "/api/products/" + encodeURIComponent(product.id) + "/restock",
+            {
+                method: "POST",
+                body: JSON.stringify({ quantity })
+            }
+        );
+
+        showMessage(
+            "dashboardMessage",
+            "Stock restocked successfully.",
+            "success"
+        );
+
+        await loadProducts();
+    } catch (error) {
+        showMessage("dashboardMessage", error.message, "error");
+    }
+}
+
+async function deleteProduct(product) {
+    const confirmed = confirm(
+        'Delete "' + product.name + '" (ID ' + product.id + ")?\n\n" +
+        "This action cannot be undone from this dashboard."
+    );
+
+    if (!confirmed) return;
+
+    try {
+        await apiRequest(
+            "/api/products/" + encodeURIComponent(product.id),
+            { method: "DELETE" }
+        );
+
+        showMessage(
+            "dashboardMessage",
+            "Delete request completed.",
+            "success"
+        );
+
+        await loadProducts();
+    } catch (error) {
+        showMessage("dashboardMessage", error.message, "error");
+    }
+}
+
+/* =========================
+   ORDER MANAGEMENT
+   ========================= */
+
+function renderOrders() {
+    const tbody = $("ordersTableBody");
+    tbody.replaceChildren();
+
+    if (orders.length === 0) {
+        const row = document.createElement("tr");
+        const cell = document.createElement("td");
+
+        cell.colSpan = 8;
+        cell.textContent = "No customer orders were found.";
+
+        row.appendChild(cell);
+        tbody.appendChild(row);
+        return;
+    }
+
+    orders.forEach(order => {
+        const row = document.createElement("tr");
+
+        // Order ID and tracking number
+        const orderCell = document.createElement("td");
+
+        const orderId = document.createElement("div");
+        orderId.className = "product-name";
+        orderId.textContent = "Order #" + order.id;
+        orderCell.appendChild(orderId);
+
+        const tracking = document.createElement("div");
+        tracking.className = "tracking-number";
+        tracking.textContent = order.trackingNumber || "No tracking number";
+        orderCell.appendChild(tracking);
+
+        row.appendChild(orderCell);
+
+        // Customer details
+        const customerCell = document.createElement("td");
+
+        const customerName = document.createElement("div");
+        customerName.className = "product-name";
+        customerName.textContent = order.customerName || "Unknown customer";
+        customerCell.appendChild(customerName);
+
+        const customerEmail = document.createElement("div");
+        customerEmail.className = "section-note";
+        customerEmail.textContent = order.customerEmail || "No email";
+        customerCell.appendChild(customerEmail);
+
+        const customerPhone = document.createElement("div");
+        customerPhone.className = "section-note";
+        customerPhone.textContent = order.customerPhone || "No phone";
+        customerCell.appendChild(customerPhone);
+
+        row.appendChild(customerCell);
+
+        // Delivery address
+        addCell(row, order.deliveryAddress || "No address");
+
+        // Items ordered
+        const itemsCell = document.createElement("td");
+        itemsCell.className = "order-items";
+
+        if (Array.isArray(order.items) && order.items.length > 0) {
+            order.items.forEach(item => {
+                const itemLine = document.createElement("div");
+
+                const productName = item.productName || "Product";
+                const quantity = Number(item.quantity || 0);
+
+                itemLine.textContent =
+                    productName + " × " + quantity +
+                    " — " + formatNaira(item.subtotal);
+
+                itemsCell.appendChild(itemLine);
+            });
+        } else {
+            itemsCell.textContent = "No item details available";
+        }
+
+        row.appendChild(itemsCell);
+
+        // Order total and date
+        addCell(row, formatNaira(order.totalAmount));
+        addCell(row, formatDate(order.createdAt));
+
+        // Current status
+        const statusCell = document.createElement("td");
+        const statusLabel = document.createElement("span");
+
+        statusLabel.className = "status-label";
+        statusLabel.textContent = order.status || "UNKNOWN";
+
+        statusCell.appendChild(statusLabel);
+        row.appendChild(statusCell);
+
+        // Status dropdown and update button
+        const updateCell = document.createElement("td");
+
+        const statusSelect = document.createElement("select");
+        statusSelect.className = "order-status-select";
+        statusSelect.setAttribute(
+            "aria-label",
+            "New status for order " + order.id
+        );
+
+        ORDER_STATUSES.forEach(status => {
+            const option = document.createElement("option");
+            option.value = status;
+            option.textContent = status;
+            statusSelect.appendChild(option);
+        });
+
+        const currentStatus = String(order.status || "PENDING").toUpperCase();
+
+        if (!ORDER_STATUSES.includes(currentStatus)) {
+            const option = document.createElement("option");
+            option.value = currentStatus;
+            option.textContent = currentStatus;
+            statusSelect.appendChild(option);
+        }
+
+        statusSelect.value = currentStatus;
+
+        const updateButton = document.createElement("button");
+        updateButton.className = "primary";
+        updateButton.type = "button";
+        updateButton.textContent = "Update";
+
+        if (
+            currentStatus === "CANCELLED" ||
+            currentStatus === "DELIVERED"
+        ) {
+            statusSelect.disabled = true;
+            updateButton.disabled = true;
+            updateButton.title =
+                "This order has reached a final status.";
+        }
+
+        updateButton.addEventListener("click", async () => {
+            const newStatus = statusSelect.value;
+
+            if (newStatus === currentStatus) {
+                showMessage(
+                    "ordersMessage",
+                    "Select a different status before updating.",
+                    "info"
+                );
+                return;
+            }
+
+            let confirmation =
+                "Change order #" + order.id + " from " +
+                currentStatus + " to " + newStatus + "?";
+
+            if (newStatus === "CANCELLED") {
+                confirmation +=
+                    "\n\nThe backend will attempt to restore the stock " +
+                    "for the products in this order.";
+            }
+
+            if (!confirm(confirmation)) return;
+
+            updateButton.disabled = true;
+            showMessage(
+                "ordersMessage",
+                "Updating order #" + order.id + "...",
+                "info"
+            );
+
+            try {
+                await apiRequest(
+                    "/api/orders/" + encodeURIComponent(order.id) + "/status",
+                    {
+                        method: "PUT",
+                        body: JSON.stringify({ status: newStatus })
+                    }
+                );
+
+                showMessage(
+                    "ordersMessage",
+                    "Order #" + order.id + " status updated to " +
+                    newStatus + ".",
+                    "success"
+                );
+
+                // Refresh orders and inventory after a status change.
+                await Promise.all([
+                    loadOrders(),
+                    loadProducts()
+                ]);
+            } catch (error) {
+                showMessage("ordersMessage", error.message, "error");
+                updateButton.disabled = false;
+            }
+        });
+
+        updateCell.appendChild(statusSelect);
+        updateCell.appendChild(document.createElement("br"));
+        updateCell.appendChild(updateButton);
+        row.appendChild(updateCell);
+
+        tbody.appendChild(row);
+    });
+}
+
+async function loadOrders() {
+    $("refreshOrdersButton").disabled = true;
+
+    showMessage(
+        "ordersMessage",
+        "Loading customer orders...",
+        "info"
+    );
+
+    try {
+        const data = await apiRequest("/api/orders/admin");
+
+        if (!Array.isArray(data)) {
+            throw new Error(
+                "The orders endpoint did not return an order list."
+            );
+        }
+
+        orders = data;
+        renderOrders();
+
+        showMessage(
+            "ordersMessage",
+            orders.length + " order(s) loaded successfully.",
+            "success"
+        );
+    } catch (error) {
+        showMessage("ordersMessage", error.message, "error");
+    } finally {
+        $("refreshOrdersButton").disabled = false;
+    }
+}
+
+/* =========================
+   ADMIN LOGIN AND EVENTS
+   ========================= */
+
+async function login(email, password) {
+    const response = await fetch("/api/users/login", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "Accept": "application/json"
+        },
+        body: JSON.stringify({ email, password })
+    });
+
+    const text = await response.text();
+    let data;
+
+    try {
+        data = text ? JSON.parse(text) : {};
+    } catch {
+        data = { message: text };
+    }
+
+    if (!response.ok) {
+        throw new Error(
+            typeof data === "string"
+                ? data
+                : data.message || "Login failed. Check your credentials."
+        );
+    }
+
+    if (!data.token) {
+        throw new Error(
+            "Login succeeded but the server did not return a JWT."
+        );
+    }
+
+    if (String(data.role || "").toUpperCase() !== "ADMIN") {
+        throw new Error(
+            "This account is not an administrator. Use an account with the ADMIN role."
+        );
+    }
+
+    sessionStorage.setItem(TOKEN_KEY, data.token);
+    sessionStorage.setItem(EMAIL_KEY, data.email || email);
+
+    setLoggedInUI(true);
+
+    // Load products and orders after successful login.
+    await Promise.all([
+        loadProducts(),
+        loadOrders()
+    ]);
+}
+
+$("loginForm").addEventListener("submit", async event => {
+    event.preventDefault();
+
+    const button = $("loginButton");
+    button.disabled = true;
+
+    showMessage("loginMessage", "Signing in...", "info");
+
+    try {
+        await login(
+            $("loginEmail").value.trim(),
+            $("loginPassword").value
+        );
+
+        $("loginPassword").value = "";
+        showMessage("loginMessage", "", "info");
+    } catch (error) {
+        sessionStorage.removeItem(TOKEN_KEY);
+        sessionStorage.removeItem(EMAIL_KEY);
+
+        setLoggedInUI(false);
+
+        showMessage("loginMessage", error.message, "error");
+    } finally {
+        button.disabled = false;
+    }
+});
+
+$("logoutButton").addEventListener("click", () => {
+    sessionStorage.removeItem(TOKEN_KEY);
+    sessionStorage.removeItem(EMAIL_KEY);
+
+    products = [];
+    orders = [];
+
+    resetProductForm();
+    setLoggedInUI(false);
+
+    showMessage(
+        "loginMessage",
+        "You have been logged out.",
+        "success"
+    );
+});
+
+$("refreshButton").addEventListener("click", loadProducts);
+$("refreshOrdersButton").addEventListener("click", loadOrders);
+$("cancelEditButton").addEventListener("click", resetProductForm);
+
+$("searchInput").addEventListener("input", event => {
+    searchTerm = event.target.value;
+    renderProducts();
+});
+
+// Start with the login screen. The server enforces access permissions.
+setLoggedInUI(false);
+</script>
+</body>
+</html>
