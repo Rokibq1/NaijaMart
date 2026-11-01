@@ -558,18 +558,28 @@
             <button type="button" id="shopNav" class="nav-button active"
                 onclick="showView('shopView')">Shop</button>
 
-            <button type="button" id="cartNav" class="nav-button"
-                onclick="showView('cartView')">
-                🛒 Cart (<span id="cartCount" class="cart-count">0</span>)
-            </button>
+<nav>
+    <button type="button" id="cartNav" class="nav-button"
+        onclick="showView('cartView')">
+        🛒 Cart (<span id="cartCount" class="cart-count">0</span>)
+    </button>
 
-            <button type="button" id="loginNav" class="nav-button"
-                onclick="showView('loginView')">Login</button>
+    <button type="button" id="loginNav" class="nav-button"
+        onclick="showView('loginView')">
+        Login
+    </button>
 
-            <button type="button" id="trackingNav" class="nav-button"
-                onclick="showView('trackingView')">Track Order</button>
-        </nav>
-    </header>
+    <button type="button" id="signupNav" class="nav-button"
+        onclick="showView('loginView'); document.getElementById('showSignupButton').click();">
+        Sign Up
+    </button>
+
+    <button type="button" id="trackingNav" class="nav-button"
+        onclick="showView('trackingView')">
+        Track Order
+    </button>
+</nav>
+
 
     <main>
         <div id="shopView" class="page-view active">
