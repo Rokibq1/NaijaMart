@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -94,6 +94,66 @@
             gap: 8px;
             flex-wrap: wrap;
         }
+/* Account profile dropdown */
+.account-menu {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+}
+
+.account-trigger {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.profile-icon {
+    font-size: 20px;
+    line-height: 1;
+}
+
+.account-dropdown {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    width: 220px;
+    padding: 8px;
+    background: #ffffff;
+    border: 1px solid #dddddd;
+    border-radius: 10px;
+    box-shadow: 0 5px 18px rgba(0, 0, 0, 0.15);
+    z-index: 1000;
+}
+
+.account-dropdown[hidden] {
+    display: none !important;
+}
+
+.account-dropdown-heading {
+    padding: 10px;
+    font-weight: bold;
+    color: #087443;
+    border-bottom: 1px solid #eeeeee;
+    overflow-wrap: anywhere;
+}
+
+.account-dropdown button {
+    display: block;
+    width: 100%;
+    padding: 11px 10px;
+    border: none;
+    border-radius: 6px;
+    background: #ffffff;
+    color: #333333;
+    text-align: left;
+    cursor: pointer;
+}
+
+.account-dropdown button:hover {
+    background: #eaf5ee;
+}
+
 
         .nav-button {
             border: none;
@@ -514,7 +574,14 @@
             header { position: static; }
             .search-form { order: 3; flex-basis: 100%; max-width: none; }
             .header-actions { width: 100%; }
-            .header-actions button { flex: 1; }
+           .header-actions > .nav-button,
+.header-actions > .account-menu {
+    flex: 1;
+}
+
+.header-actions > .account-menu .account-trigger {
+    width: 100%;
+}
             .hero { padding: 30px 22px; min-height: 250px; }
             .products-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
             .product-image-wrap { height: 155px; }
@@ -554,31 +621,72 @@
             <button type="submit">Search</button>
         </form>
 
-        <nav class="header-actions" aria-label="Main navigation">
-            <button type="button" id="shopNav" class="nav-button active"
-                onclick="showView('shopView')">Shop</button>
 
-<nav>
-    <button type="button" id="cartNav" class="nav-button"
-        onclick="showView('cartView')">
-        🛒 Cart (<span id="cartCount" class="cart-count">0</span>)
+<nav class="header-actions" aria-label="Main navigation">
+    <button type="button" id="shopNav" class="nav-button active"
+        onclick="showView('shopView')">
+        Shop
     </button>
 
-    <button type="button" id="loginNav" class="nav-button"
-        onclick="showView('loginView')">
-        Login
-    </button>
+  <button type="button" id="cartNav" class="nav-button"
+    onclick="showView('cartView')"
+    aria-label="Shopping cart">
 
-    <button type="button" id="signupNav" class="nav-button"
-        onclick="showView('loginView'); document.getElementById('showSignupButton').click();">
-        Sign Up
-    </button>
+    <span aria-hidden="true">🛒</span>
+    <span id="cartCount" class="cart-count">0</span>
+
+</button>
+
+    <div class="account-menu" id="accountMenu">
+
+        <button type="button" id="loginNav" class="nav-button account-trigger"
+            onclick="toggleAccountMenu()"
+            aria-haspopup="true"
+            aria-expanded="false"
+            aria-label="My Account">
+
+            <span class="profile-icon" aria-hidden="true">👤</span>
+            <span class="account-trigger-label">Login</span>
+
+        </button>
+
+        <div class="account-dropdown" id="accountDropdown" hidden>
+
+            <div class="account-dropdown-heading" id="accountDropdownHeading">
+                My Account
+            </div>
+
+            <button type="button" id="accountSignInOption"
+                onclick="handleAccountSignIn()">
+                Sign In
+            </button>
+
+            <button type="button" id="accountSignupOption"
+                onclick="handleAccountSignUp()">
+                Create Account
+            </button>
+
+            <button type="button" id="accountOrdersOption"
+                onclick="closeAccountMenu(); showView('trackingView')">
+                Track Order
+            </button>
+
+            <button type="button" id="accountLogoutOption"
+                onclick="logout()" hidden>
+                Sign Out
+            </button>
+
+        </div>
+
+    </div>
 
     <button type="button" id="trackingNav" class="nav-button"
         onclick="showView('trackingView')">
         Track Order
     </button>
+
 </nav>
+
 
 
     <main>
@@ -1006,46 +1114,110 @@
             prefillCheckoutEmail();
         }
 
-        function updateLoginInterface() {
-            const token = getAuthToken();
-            const email = localStorage.getItem(EMAIL_STORAGE_KEY) || "";
-            const loginNav = document.getElementById("loginNav");
-            const status = document.getElementById("loginAccountStatus");
-            const logoutButton = document.getElementById("logoutButton");
-            const googleButton = document.getElementById("googleLoginButton");
 
-            if (token) {
-                let customerName =
-                    localStorage.getItem(FIRST_NAME_STORAGE_KEY) ||
-                    localStorage.getItem("firstName") ||
-                    "";
+function toggleAccountMenu() {
+    const dropdown = document.getElementById("accountDropdown");
+    const loginNav = document.getElementById("loginNav");
+    if (!dropdown || !loginNav) return;
 
-                if (!customerName) {
-                    customerName = getFirstNameFromEmail(email);
-                    if (customerName) {
-                        localStorage.setItem(FIRST_NAME_STORAGE_KEY, customerName);
-                    }
-                }
+    dropdown.hidden = !dropdown.hidden;
+    loginNav.setAttribute("aria-expanded", String(!dropdown.hidden));
+}
 
-                loginNav.textContent = customerName
-                    ? "Hi, " + customerName + "!"
-                    : "My Account";
+function closeAccountMenu() {
+    const dropdown = document.getElementById("accountDropdown");
+    const loginNav = document.getElementById("loginNav");
 
-                status.hidden = false;
-                status.textContent = email
-                    ? "Signed in as " + email
-                    : "You are signed in to NaijaMart.";
+    if (dropdown) dropdown.hidden = true;
 
-                logoutButton.style.display = "block";
-                googleButton.style.display = "none";
-            } else {
-                loginNav.textContent = "Login";
-                status.hidden = true;
-                status.textContent = "";
-                logoutButton.style.display = "none";
-                googleButton.style.display = "block";
-            }
+    if (loginNav) {
+        loginNav.setAttribute("aria-expanded", "false");
+    }
+}
+
+function handleAccountSignIn() {
+    closeAccountMenu();
+    showView("loginView");
+    showLoginScreen();
+}
+
+function handleAccountSignUp() {
+    closeAccountMenu();
+    showView("loginView");
+
+    const signupButton = document.getElementById("showSignupButton");
+
+    if (signupButton) {
+        signupButton.click();
+    }
+}
+
+
+
+function updateLoginInterface() {
+    const token = getAuthToken();
+    const email = localStorage.getItem(EMAIL_STORAGE_KEY) || "";
+
+    const loginNav = document.getElementById("loginNav");
+    const status = document.getElementById("loginAccountStatus");
+    const logoutButton = document.getElementById("logoutButton");
+    const googleButton = document.getElementById("googleLoginButton");
+
+    const accountLabel = document.querySelector(".account-trigger-label");
+    const dropdownHeading = document.getElementById("accountDropdownHeading");
+
+    const signInOption = document.getElementById("accountSignInOption");
+    const signupOption = document.getElementById("accountSignupOption");
+    const ordersOption = document.getElementById("accountOrdersOption");
+    const accountLogoutOption = document.getElementById("accountLogoutOption");
+
+    if (token) {
+        if (accountLabel) {
+            accountLabel.textContent = "Account";
         }
+
+        if (dropdownHeading) {
+            dropdownHeading.textContent = email || "My Account";
+        }
+
+        if (signInOption) signInOption.hidden = true;
+        if (signupOption) signupOption.hidden = true;
+        if (ordersOption) ordersOption.hidden = false;
+        if (accountLogoutOption) accountLogoutOption.hidden = false;
+
+        if (status) {
+            status.hidden = false;
+            status.textContent = email
+                ? "Signed in as " + email
+                : "You are signed in to NaijaMart.";
+        }
+
+        if (logoutButton) logoutButton.style.display = "block";
+        if (googleButton) googleButton.style.display = "none";
+
+    } else {
+        if (accountLabel) {
+            accountLabel.textContent = "Login";
+        }
+
+        if (dropdownHeading) {
+            dropdownHeading.textContent = "Welcome to NaijaMart";
+        }
+
+        if (signInOption) signInOption.hidden = false;
+        if (signupOption) signupOption.hidden = false;
+        if (ordersOption) ordersOption.hidden = false;
+        if (accountLogoutOption) accountLogoutOption.hidden = true;
+
+        if (status) {
+            status.hidden = true;
+            status.textContent = "";
+        }
+
+        if (logoutButton) logoutButton.style.display = "none";
+        if (googleButton) googleButton.style.display = "block";
+    }
+}
 
         function prefillCheckoutEmail() {
             const email = localStorage.getItem(EMAIL_STORAGE_KEY) || "";
@@ -1160,38 +1332,42 @@
             }
         }
 
-        function showView(viewId) {
-            const validViews = [
-                "shopView",
-                "cartView",
-                "loginView",
-                "trackingView",
-                "paymentView"
-            ];
 
-            if (!validViews.includes(viewId)) return;
+function showView(viewId) {
+    const validViews = [
+        "shopView",
+        "cartView",
+        "loginView",
+        "trackingView",
+        "paymentView"
+    ];
 
-            document.querySelectorAll(".page-view").forEach(function(view) {
-                view.classList.toggle("active", view.id === viewId);
-            });
+    if (!validViews.includes(viewId)) return;
 
-            document.getElementById("shopNav").classList.toggle("active", viewId === "shopView");
-            document.getElementById("cartNav").classList.toggle("active", viewId === "cartView");
-            document.getElementById("loginNav").classList.toggle("active", viewId === "loginView");
-            document.getElementById("trackingNav").classList.toggle("active", viewId === "trackingView");
+    // Close the account dropdown when navigating
+    closeAccountMenu();
 
-            if (viewId === "cartView") {
-                renderCart();
-                prefillCheckoutEmail();
-            }
+    document.querySelectorAll(".page-view").forEach(function(view) {
+        view.classList.toggle("active", view.id === viewId);
+    });
 
-            if (viewId === "loginView") {
-                updateLoginInterface();
-                prefillCheckoutEmail();
-            }
+    document.getElementById("shopNav").classList.toggle("active", viewId === "shopView");
+    document.getElementById("cartNav").classList.toggle("active", viewId === "cartView");
+    document.getElementById("loginNav").classList.toggle("active", viewId === "loginView");
+    document.getElementById("trackingNav").classList.toggle("active", viewId === "trackingView");
 
-            window.scrollTo({ top: 0, behavior: "smooth" });
-        }
+    if (viewId === "cartView") {
+        renderCart();
+        prefillCheckoutEmail();
+    }
+
+    if (viewId === "loginView") {
+        updateLoginInterface();
+        prefillCheckoutEmail();
+    }
+
+    window.scrollTo({ top: 0, behavior: "smooth" });
+}
 
         function money(amount) {
             return new Intl.NumberFormat("en-NG", {
@@ -1813,7 +1989,7 @@
             }
         });
 
-       
+
 /* Checkout and simulated payment */
 document.getElementById("checkoutForm").addEventListener("submit", async function(event) {
     event.preventDefault();
@@ -2090,6 +2266,20 @@ document.getElementById("checkoutForm").addEventListener("submit", async functio
         document.getElementById("trackingForm").addEventListener("submit", async function(event) {
             event.preventDefault();
             clearNotice("trackingNotice");
+            event.preventDefault();
+clearNotice("checkoutNotice");
+
+// Customers must sign in before placing an order.
+if (!getAuthToken()) {
+    showNotice(
+        "checkoutNotice",
+        "Please sign in to your NaijaMart account before placing an order.",
+        "error"
+    );
+
+    showView("loginView");
+    return;
+}
             document.getElementById("trackingResult").innerHTML = "";
 
             const trackingNumber = document.getElementById("trackingNumber").value.trim();

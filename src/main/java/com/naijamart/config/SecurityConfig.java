@@ -4,6 +4,7 @@ package com.naijamart.config;
 import com.naijamart.security.GoogleLoginSuccessHandler;
 import com.naijamart.security.JwtAuthenticationFilter;
 
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -11,6 +12,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
@@ -31,12 +33,13 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(
-            HttpSecurity http) throws Exception {
+            HttpSecurity http,
+            ObjectProvider<ClientRegistrationRepository> registrationProvider)
+            throws Exception {
 
         http
             .csrf(csrf -> csrf.disable())
 
-            // OAuth needs a temporary session for the Google redirect.
             .sessionManagement(session ->
                 session.sessionCreationPolicy(
                     SessionCreationPolicy.IF_REQUIRED
@@ -45,7 +48,6 @@ public class SecurityConfig {
 
             .authorizeHttpRequests(auth -> auth
 
-                // Public website pages and static resources.
                 .requestMatchers(
                     "/",
                     "/index.html",
@@ -57,13 +59,11 @@ public class SecurityConfig {
                     "/images/**"
                 ).permitAll()
 
-                // Google Sign-In routes.
                 .requestMatchers(
                     "/oauth2/**",
                     "/login/oauth2/**"
                 ).permitAll()
 
-                // Registration and login.
                 .requestMatchers(
                     HttpMethod.POST,
                     "/api/users",
@@ -71,49 +71,46 @@ public class SecurityConfig {
                     "/api/auth/google/exchange"
                 ).permitAll()
 
-                // Public product browsing.
                 .requestMatchers(
                     HttpMethod.GET,
                     "/api/products",
                     "/api/products/*"
                 ).permitAll()
 
-                // Product restock notifications.
                 .requestMatchers(
                     HttpMethod.POST,
                     "/api/products/*/notify-when-available"
                 ).permitAll()
 
-                // Customer checkout.
                 .requestMatchers(
                     HttpMethod.POST,
                     "/api/orders"
                 ).permitAll()
 
-                // Order tracking.
                 .requestMatchers(
                     HttpMethod.GET,
                     "/api/orders/track/*"
                 ).permitAll()
 
-                // Local simulated payment endpoint.
                 .requestMatchers(
                     HttpMethod.POST,
                     "/api/demo-payments/success"
                 ).permitAll()
 
-                // All other endpoints require authentication.
                 .anyRequest().authenticated()
-            )
-
-            .oauth2Login(oauth -> oauth
-                .successHandler(googleLoginSuccessHandler)
-            )
-
-            .addFilterBefore(
-                jwtAuthenticationFilter,
-                UsernamePasswordAuthenticationFilter.class
             );
+
+        // Enable Google login only when Google credentials are configured.
+        if (registrationProvider.getIfAvailable() != null) {
+            http.oauth2Login(oauth ->
+                oauth.successHandler(googleLoginSuccessHandler)
+            );
+        }
+
+        http.addFilterBefore(
+            jwtAuthenticationFilter,
+            UsernamePasswordAuthenticationFilter.class
+        );
 
         return http.build();
     }

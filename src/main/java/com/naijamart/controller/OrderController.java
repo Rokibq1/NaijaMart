@@ -1,3 +1,4 @@
+
 package com.naijamart.controller;
 
 import com.naijamart.dto.CheckoutRequest;
@@ -28,8 +29,9 @@ public class OrderController {
         this.orderService = orderService;
     }
 
-    // CUSTOMER CHECKOUT
+    // CUSTOMER CHECKOUT - LOGIN REQUIRED
     @PostMapping
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Map<String, Object>> placeOrder(
             @Valid @RequestBody CheckoutRequest request) {
 
@@ -48,7 +50,6 @@ public class OrderController {
         response.put("createdAt", order.getCreatedAt());
 
         // Email delivery is handled separately after the order is saved.
-        // Do not claim delivery succeeded before SMTP confirms it.
         response.put("emailSent", false);
         response.put(
                 "emailMessage",
