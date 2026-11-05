@@ -237,6 +237,17 @@
             color: #34463a;
         }
 
+        .payment-warning {
+            background: #fff7e6;
+            border: 1px solid #f2d28a;
+            color: #70500a;
+            border-radius: 8px;
+            padding: 13px;
+            line-height: 1.6;
+            margin-bottom: 17px;
+            font-size: 13px;
+        }
+
         footer {
             text-align: center;
             color: var(--muted);
@@ -259,7 +270,7 @@
 <header class="topbar">
     <div>
         <div class="brand">Naija<span>Mart</span> Admin</div>
-        <small>Products, inventory and order management</small>
+        <small>Products, inventory, orders and payment verification</small>
     </div>
 
     <div class="actions" style="margin:0">
@@ -311,7 +322,7 @@
         <section class="panel">
             <h1>Admin dashboard</h1>
             <p class="muted">
-                Manage products, inventory, customer orders and deliveries.
+                Manage products, inventory, customer orders, payments and deliveries.
             </p>
             <p id="welcomeText" class="section-note"></p>
             <div id="dashboardMessage" aria-live="polite"></div>
@@ -430,7 +441,7 @@
             </div>
         </section>
 
-        <!-- NEW ORDER MANAGEMENT SECTION -->
+        <!-- CUSTOMER ORDERS -->
         <section class="panel" id="ordersPanel">
             <div class="toolbar">
                 <div>
@@ -479,6 +490,65 @@
             </p>
         </section>
 
+        <!-- BANK TRANSFER PAYMENT VERIFICATION -->
+        <section class="panel" id="paymentsPanel">
+
+            <div class="toolbar">
+                <div>
+                    <h2 style="margin-bottom:5px">
+                        Bank Transfer Payment Verification
+                    </h2>
+                    <span class="section-note">
+                        Review uploaded payment evidence and verify transfers.
+                    </span>
+                </div>
+
+                <button id="refreshPaymentsButton"
+                        class="primary" type="button">
+                    Refresh payments
+                </button>
+            </div>
+
+            <div class="payment-warning">
+                <strong>Important:</strong>
+                An uploaded payment proof does not mean that money has been received.
+                Check your actual bank account or transaction records before approving
+                any payment. Only approve a transfer after independently confirming
+                that the funds have arrived.
+            </div>
+
+            <div id="paymentsMessage" aria-live="polite"></div>
+
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                    <tr>
+                        <th>Order</th>
+                        <th>Customer</th>
+                        <th>Amount</th>
+                        <th>Payment Proof</th>
+                        <th>Date Submitted</th>
+                        <th>Payment Status</th>
+                        <th>Actions</th>
+                    </tr>
+                    </thead>
+
+                    <tbody id="paymentsTableBody">
+                    <tr>
+                        <td colspan="7">
+                            Sign in to load pending payments.
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <p class="section-note">
+                Approved payments are marked as PAID by the backend.
+                Customers can then access their official PDF receipts.
+            </p>
+        </section>
+
     </section>
 </main>
 
@@ -495,6 +565,7 @@ const EMAIL_KEY = "naijamart_admin_email";
 let products = [];
 let searchTerm = "";
 let orders = [];
+let pendingPayments = [];
 
 const ORDER_STATUSES = [
     "PENDING",
@@ -505,12 +576,47 @@ const ORDER_STATUSES = [
     "CANCELLED"
 ];
 
+// =========================
+// ADMIN FORM VALIDATION
+// =========================
+
+function isValidAdminEmail(value) {
+    const email = String(value || "").trim();
+
+    return email.length <= 254 &&
+        /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
+
+function isValidProductImage(value) {
+    const image = String(value || "").trim();
+
+    if (!image) return true;
+
+    if (/^\/images\/[A-Za-z0-9._/-]+$/.test(image)) {
+        return !image.includes("..");
+    }
+
+    try {
+        const url = new URL(image);
+
+        return (
+            (url.protocol === "https:" || url.protocol === "http:") &&
+            Boolean(url.hostname)
+        );
+    } catch {
+        return false;
+    }
+}
+
 function getToken() {
     return sessionStorage.getItem(TOKEN_KEY);
 }
 
 function showMessage(elementId, message, type = "info") {
     const element = $(elementId);
+
+    if (!element) return;
+
     element.replaceChildren();
 
     if (!message) return;
@@ -773,48 +879,103 @@ function startEdit(product) {
         block: "start"
     });
 }
-
 $("productForm").addEventListener("submit", async event => {
     event.preventDefault();
 
-    const id = $("productId").value;
-    const price = Number($("productPrice").value);
-    const stockQuantity = Number($("productStock").value);
+    const id = $("productId").value.trim();
+
+    const name = $("productName").value.trim();
+    const priceValue = $("productPrice").value.trim();
+    const stockValue = $("productStock").value.trim();
+    const imageUrl = $("productImage").value.trim();
+    const description = $("productDescription").value.trim();
+
+    // Validate product name
+    if (name.length < 2 || name.length > 180) {
+        showMessage(
+            "dashboardMessage",
+            "Product name must contain between 2 and 180 characters.",
+            "error"
+        );
+        $("productName").focus();
+        return;
+    }
+
+    // Validate price
+    if (!priceValue) {
+        showMessage(
+            "dashboardMessage",
+            "Please enter the product price.",
+            "error"
+        );
+        $("productPrice").focus();
+        return;
+    }
+
+    const price = Number(priceValue);
 
     if (!Number.isFinite(price) || price <= 0) {
         showMessage(
             "dashboardMessage",
-            "Enter a price greater than zero.",
+            "Enter a valid price greater than zero.",
             "error"
         );
+        $("productPrice").focus();
         return;
     }
 
-    if (!Number.isInteger(stockQuantity) || stockQuantity < 0) {
+    // Validate stock
+    if (!stockValue) {
+        showMessage(
+            "dashboardMessage",
+            "Please enter the stock quantity.",
+            "error"
+        );
+        $("productStock").focus();
+        return;
+    }
+
+    const stockQuantity = Number(stockValue);
+
+    if (!Number.isSafeInteger(stockQuantity) || stockQuantity < 0) {
         showMessage(
             "dashboardMessage",
             "Stock must be a whole number of zero or more.",
             "error"
         );
+        $("productStock").focus();
+        return;
+    }
+
+    // Validate image URL or local path
+    if (imageUrl.length > 1000 || !isValidProductImage(imageUrl)) {
+        showMessage(
+            "dashboardMessage",
+            "Enter a valid image URL beginning with http:// or https://, or a local path such as /images/product.jpg.",
+            "error"
+        );
+        $("productImage").focus();
+        return;
+    }
+
+    // Validate description
+    if (description.length > 5000) {
+        showMessage(
+            "dashboardMessage",
+            "Product description must not exceed 5,000 characters.",
+            "error"
+        );
+        $("productDescription").focus();
         return;
     }
 
     const product = {
-        name: $("productName").value.trim(),
+        name,
         price,
         stockQuantity,
-        imageUrl: $("productImage").value.trim(),
-        description: $("productDescription").value.trim()
+        imageUrl,
+        description
     };
-
-    if (!product.name) {
-        showMessage(
-            "dashboardMessage",
-            "Product name is required.",
-            "error"
-        );
-        return;
-    }
 
     const button = $("saveProductButton");
     button.disabled = true;
@@ -849,13 +1010,14 @@ $("productForm").addEventListener("submit", async event => {
 
         resetProductForm();
         await loadProducts();
+
     } catch (error) {
         showMessage("dashboardMessage", error.message, "error");
+
     } finally {
-        button.disabled = false;
+         button.disabled = false;
     }
 });
-
 async function restockProduct(product) {
     const answer = prompt(
         "Current stock: " + Number(product.stockQuantity || 0) +
@@ -864,12 +1026,38 @@ async function restockProduct(product) {
 
     if (answer === null) return;
 
-    const quantity = Number(answer);
+    const cleanAnswer = answer.trim();
 
-    if (!Number.isInteger(quantity) || quantity <= 0) {
+    if (!/^\d+$/.test(cleanAnswer)) {
         showMessage(
             "dashboardMessage",
-            "Enter a whole number greater than zero.",
+            "Enter a valid whole number greater than zero.",
+            "error"
+        );
+        return;
+    }
+
+    const quantity = Number(cleanAnswer);
+
+    if (!Number.isSafeInteger(quantity) || quantity <= 0) {
+        showMessage(
+            "dashboardMessage",
+            "Restock quantity must be a whole number greater than zero.",
+            "error"
+        );
+        return;
+    }
+
+    const currentStock = Number(product.stockQuantity || 0);
+
+    if (
+        !Number.isSafeInteger(currentStock) ||
+        currentStock < 0 ||
+        !Number.isSafeInteger(currentStock + quantity)
+    ) {
+        showMessage(
+            "dashboardMessage",
+            "The resulting stock quantity is too large.",
             "error"
         );
         return;
@@ -891,6 +1079,7 @@ async function restockProduct(product) {
         );
 
         await loadProducts();
+
     } catch (error) {
         showMessage("dashboardMessage", error.message, "error");
     }
@@ -945,7 +1134,6 @@ function renderOrders() {
     orders.forEach(order => {
         const row = document.createElement("tr");
 
-        // Order ID and tracking number
         const orderCell = document.createElement("td");
 
         const orderId = document.createElement("div");
@@ -960,7 +1148,6 @@ function renderOrders() {
 
         row.appendChild(orderCell);
 
-        // Customer details
         const customerCell = document.createElement("td");
 
         const customerName = document.createElement("div");
@@ -980,10 +1167,8 @@ function renderOrders() {
 
         row.appendChild(customerCell);
 
-        // Delivery address
         addCell(row, order.deliveryAddress || "No address");
 
-        // Items ordered
         const itemsCell = document.createElement("td");
         itemsCell.className = "order-items";
 
@@ -1006,11 +1191,9 @@ function renderOrders() {
 
         row.appendChild(itemsCell);
 
-        // Order total and date
         addCell(row, formatNaira(order.totalAmount));
         addCell(row, formatDate(order.createdAt));
 
-        // Current status
         const statusCell = document.createElement("td");
         const statusLabel = document.createElement("span");
 
@@ -1020,7 +1203,6 @@ function renderOrders() {
         statusCell.appendChild(statusLabel);
         row.appendChild(statusCell);
 
-        // Status dropdown and update button
         const updateCell = document.createElement("td");
 
         const statusSelect = document.createElement("select");
@@ -1074,6 +1256,14 @@ function renderOrders() {
                 );
                 return;
             }
+            if (!ORDER_STATUSES.includes(newStatus)) {
+    showMessage(
+        "ordersMessage",
+        "Please select a valid order status.",
+        "error"
+    );
+    return;
+}
 
             let confirmation =
                 "Change order #" + order.id + " from " +
@@ -1088,6 +1278,7 @@ function renderOrders() {
             if (!confirm(confirmation)) return;
 
             updateButton.disabled = true;
+
             showMessage(
                 "ordersMessage",
                 "Updating order #" + order.id + "...",
@@ -1110,7 +1301,6 @@ function renderOrders() {
                     "success"
                 );
 
-                // Refresh orders and inventory after a status change.
                 await Promise.all([
                     loadOrders(),
                     loadProducts()
@@ -1164,6 +1354,332 @@ async function loadOrders() {
 }
 
 /* =========================
+   BANK TRANSFER VERIFICATION
+   ========================= */
+
+function renderPendingPayments() {
+    const tbody = $("paymentsTableBody");
+    tbody.replaceChildren();
+
+    if (pendingPayments.length === 0) {
+        const row = document.createElement("tr");
+        const cell = document.createElement("td");
+
+        cell.colSpan = 7;
+        cell.textContent = "There are no pending payment proofs.";
+
+        row.appendChild(cell);
+        tbody.appendChild(row);
+        return;
+    }
+
+    pendingPayments.forEach(payment => {
+        const row = document.createElement("tr");
+
+        const orderCell = document.createElement("td");
+
+        const orderNumber = document.createElement("div");
+        orderNumber.className = "product-name";
+        orderNumber.textContent = "Order #" + payment.orderId;
+        orderCell.appendChild(orderNumber);
+
+        const tracking = document.createElement("div");
+        tracking.className = "tracking-number";
+        tracking.textContent =
+            payment.trackingNumber || "No tracking number";
+        orderCell.appendChild(tracking);
+
+        row.appendChild(orderCell);
+
+        const customerCell = document.createElement("td");
+
+        const customerName = document.createElement("div");
+        customerName.className = "product-name";
+        customerName.textContent =
+            payment.customerName || "Unknown customer";
+        customerCell.appendChild(customerName);
+
+        const customerEmail = document.createElement("div");
+        customerEmail.className = "section-note";
+        customerEmail.textContent =
+            payment.customerEmail || "No email";
+        customerCell.appendChild(customerEmail);
+
+        row.appendChild(customerCell);
+
+        addCell(row, formatNaira(payment.amount));
+        addCell(row, payment.filename || "Uploaded proof");
+        addCell(row, formatDate(payment.submittedAt));
+
+        const statusCell = document.createElement("td");
+        const status = document.createElement("span");
+
+        status.className = "status-label";
+        status.textContent = payment.paymentStatus || "PENDING";
+
+        statusCell.appendChild(status);
+        row.appendChild(statusCell);
+
+        const actionsCell = document.createElement("td");
+        const actions = document.createElement("div");
+        actions.className = "table-actions";
+
+        const viewButton = document.createElement("button");
+        viewButton.className = "secondary";
+        viewButton.type = "button";
+        viewButton.textContent = "View proof";
+        viewButton.addEventListener("click", () => {
+            viewPaymentProof(payment.orderId);
+        });
+
+        const approveButton = document.createElement("button");
+        approveButton.className = "primary";
+        approveButton.type = "button";
+        approveButton.textContent = "Approve";
+        approveButton.addEventListener("click", () => {
+            approvePayment(payment.orderId, approveButton);
+        });
+
+        const rejectButton = document.createElement("button");
+        rejectButton.className = "danger";
+        rejectButton.type = "button";
+        rejectButton.textContent = "Reject";
+        rejectButton.addEventListener("click", () => {
+            rejectPayment(payment.orderId, rejectButton);
+        });
+
+        actions.appendChild(viewButton);
+        actions.appendChild(approveButton);
+        actions.appendChild(rejectButton);
+
+        actionsCell.appendChild(actions);
+        row.appendChild(actionsCell);
+
+        tbody.appendChild(row);
+    });
+}
+
+async function loadPendingPayments() {
+    const button = $("refreshPaymentsButton");
+    button.disabled = true;
+
+    showMessage(
+        "paymentsMessage",
+        "Loading pending payment proofs...",
+        "info"
+    );
+
+    try {
+        const data = await apiRequest("/api/transfers/admin/pending");
+
+        if (!Array.isArray(data)) {
+            throw new Error(
+                "The pending payments endpoint did not return a list."
+            );
+        }
+
+        pendingPayments = data;
+        renderPendingPayments();
+
+        showMessage(
+            "paymentsMessage",
+            pendingPayments.length +
+            " pending payment proof(s) loaded.",
+            "success"
+        );
+    } catch (error) {
+        showMessage("paymentsMessage", error.message, "error");
+    } finally {
+        button.disabled = false;
+    }
+}
+
+async function viewPaymentProof(orderId) {
+    let proofWindow = null;
+
+    try {
+        // Open the tab directly from the button click to avoid popup blocking.
+        proofWindow = window.open("", "_blank");
+
+        if (proofWindow) {
+            proofWindow.document.write(
+                "<!DOCTYPE html><html><head><title>Payment Proof</title></head>" +
+                "<body style='font-family:Arial;padding:25px'>" +
+                "<h2>Loading payment proof...</h2></body></html>"
+            );
+        }
+
+        const response = await fetch(
+            "/api/transfers/admin/" +
+            encodeURIComponent(orderId) +
+            "/proof",
+            {
+                method: "GET",
+                headers: {
+                    "Authorization": "Bearer " + getToken()
+                }
+            }
+        );
+
+        if (!response.ok) {
+            if (response.status === 401 || response.status === 403) {
+                throw new Error(
+                    "You are not authorised to view this payment proof."
+                );
+            }
+
+            throw new Error(
+                "Could not load payment proof. HTTP " + response.status
+            );
+        }
+
+        const blob = await response.blob();
+        const objectUrl = URL.createObjectURL(blob);
+
+        if (proofWindow && !proofWindow.closed) {
+            proofWindow.location.href = objectUrl;
+
+            // Keep the object URL alive while the proof tab is open.
+            proofWindow.addEventListener("beforeunload", () => {
+                URL.revokeObjectURL(objectUrl);
+            });
+        } else {
+            URL.revokeObjectURL(objectUrl);
+            showMessage(
+                "paymentsMessage",
+                "Your browser blocked the proof tab. Allow pop-ups and try again.",
+                "error"
+            );
+        }
+    } catch (error) {
+        if (proofWindow && !proofWindow.closed) {
+            proofWindow.close();
+        }
+
+        showMessage("paymentsMessage", error.message, "error");
+    }
+}
+
+async function approvePayment(orderId, button) {
+    const confirmed = confirm(
+        "Have you independently checked your bank account and confirmed " +
+        "that the transfer for order #" + orderId +
+        " has actually arrived?\n\n" +
+        "Only approve if the money has been received."
+    );
+
+    if (!confirmed) return;
+
+    button.disabled = true;
+
+    showMessage(
+        "paymentsMessage",
+        "Approving payment for order #" + orderId + "...",
+        "info"
+    );
+
+    try {
+        const result = await apiRequest(
+            "/api/transfers/admin/" +
+            encodeURIComponent(orderId) +
+            "/approve",
+            {
+                method: "POST"
+            }
+        );
+
+        showMessage(
+            "paymentsMessage",
+            result && result.message
+                ? result.message
+                : "Payment approved successfully for order #" + orderId + ".",
+            "success"
+        );
+
+        await Promise.all([
+            loadPendingPayments(),
+            loadOrders()
+        ]);
+
+    } catch (error) {
+        showMessage("paymentsMessage", error.message, "error");
+        button.disabled = false;
+    }
+}
+
+async function rejectPayment(orderId, button) {
+    const reason = prompt(
+        "Enter the reason for rejecting payment for order #" +
+        orderId + ":"
+    );
+
+    if (reason === null) return;
+
+    const cleanReason = reason.trim();
+
+    if (!cleanReason) {
+        showMessage(
+            "paymentsMessage",
+            "You must provide a reason for rejecting the payment.",
+            "error"
+        );
+        return;
+    }
+
+    if (cleanReason.length > 500) {
+        showMessage(
+            "paymentsMessage",
+            "The rejection reason must not exceed 500 characters.",
+            "error"
+        );
+        return;
+    }
+
+    const confirmed = confirm(
+        "Reject payment for order #" + orderId +
+        " with this reason?\n\n" + cleanReason
+    );
+
+    if (!confirmed) return;
+
+    button.disabled = true;
+
+    showMessage(
+        "paymentsMessage",
+        "Rejecting payment for order #" + orderId + "...",
+        "info"
+    );
+
+    try {
+        const result = await apiRequest(
+            "/api/transfers/admin/" +
+            encodeURIComponent(orderId) +
+            "/reject",
+            {
+                method: "POST",
+                body: JSON.stringify({
+                    reason: cleanReason
+                })
+            }
+        );
+
+        showMessage(
+            "paymentsMessage",
+            result && result.message
+                ? result.message
+                : "Payment rejected for order #" + orderId + ".",
+            "success"
+        );
+
+        await loadPendingPayments();
+
+    } catch (error) {
+        showMessage("paymentsMessage", error.message, "error");
+        button.disabled = false;
+    }
+}
+
+/* =========================
    ADMIN LOGIN AND EVENTS
    ========================= */
 
@@ -1211,15 +1727,39 @@ async function login(email, password) {
 
     setLoggedInUI(true);
 
-    // Load products and orders after successful login.
+    // Load all dashboard sections after successful administrator login.
     await Promise.all([
         loadProducts(),
-        loadOrders()
+        loadOrders(),
+        loadPendingPayments()
     ]);
-}
-
-$("loginForm").addEventListener("submit", async event => {
+}$("loginForm").addEventListener("submit", async event => {
     event.preventDefault();
+
+    const email = $("loginEmail").value.trim();
+    const password = $("loginPassword").value;
+
+    // Validate email
+    if (!isValidAdminEmail(email)) {
+        showMessage(
+            "loginMessage",
+            "Please enter a valid email address.",
+            "error"
+        );
+        $("loginEmail").focus();
+        return;
+    }
+
+    // Validate password
+    if (!password || password.length > 72) {
+        showMessage(
+            "loginMessage",
+            "Please enter your password. It must not exceed 72 characters.",
+            "error"
+        );
+        $("loginPassword").focus();
+        return;
+    }
 
     const button = $("loginButton");
     button.disabled = true;
@@ -1227,13 +1767,11 @@ $("loginForm").addEventListener("submit", async event => {
     showMessage("loginMessage", "Signing in...", "info");
 
     try {
-        await login(
-            $("loginEmail").value.trim(),
-            $("loginPassword").value
-        );
+        await login(email, password);
 
         $("loginPassword").value = "";
         showMessage("loginMessage", "", "info");
+
     } catch (error) {
         sessionStorage.removeItem(TOKEN_KEY);
         sessionStorage.removeItem(EMAIL_KEY);
@@ -1241,6 +1779,7 @@ $("loginForm").addEventListener("submit", async event => {
         setLoggedInUI(false);
 
         showMessage("loginMessage", error.message, "error");
+
     } finally {
         button.disabled = false;
     }
@@ -1252,6 +1791,7 @@ $("logoutButton").addEventListener("click", () => {
 
     products = [];
     orders = [];
+    pendingPayments = [];
 
     resetProductForm();
     setLoggedInUI(false);
@@ -1265,6 +1805,7 @@ $("logoutButton").addEventListener("click", () => {
 
 $("refreshButton").addEventListener("click", loadProducts);
 $("refreshOrdersButton").addEventListener("click", loadOrders);
+$("refreshPaymentsButton").addEventListener("click", loadPendingPayments);
 $("cancelEditButton").addEventListener("click", resetProductForm);
 
 $("searchInput").addEventListener("input", event => {

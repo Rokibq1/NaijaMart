@@ -6,6 +6,8 @@ import com.naijamart.entity.User;
 import com.naijamart.security.JwtService;
 import com.naijamart.service.UserService;
 
+import jakarta.validation.Valid;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -31,22 +33,20 @@ public class UserController {
     // Register a new customer
     @PostMapping
     public ResponseEntity<?> createUser(
-            @RequestBody User user) {
+            @Valid @RequestBody User user) {
 
         if (user.getEmail() == null
                 || user.getEmail().isBlank()
                 || user.getPassword() == null
                 || user.getPassword().isBlank()) {
 
-            return ResponseEntity
-                    .badRequest()
+            return ResponseEntity.badRequest()
                     .body("Email and password are required");
         }
 
         if (userService.emailExists(user.getEmail())) {
 
-            return ResponseEntity
-                    .badRequest()
+            return ResponseEntity.badRequest()
                     .body("Email already exists");
         }
 
@@ -90,15 +90,14 @@ public class UserController {
     // Log in and generate a JWT token
     @PostMapping("/login")
     public ResponseEntity<?> login(
-            @RequestBody LoginRequest loginRequest) {
+            @Valid @RequestBody LoginRequest loginRequest) {
 
         if (loginRequest.getEmail() == null
                 || loginRequest.getEmail().isBlank()
                 || loginRequest.getPassword() == null
                 || loginRequest.getPassword().isBlank()) {
 
-            return ResponseEntity
-                    .badRequest()
+            return ResponseEntity.badRequest()
                     .body("Email and password are required");
         }
 
@@ -106,8 +105,7 @@ public class UserController {
 
         if (userOptional.isEmpty()) {
 
-            return ResponseEntity
-                    .status(401)
+            return ResponseEntity.status(401)
                     .body("Invalid email or password");
         }
 

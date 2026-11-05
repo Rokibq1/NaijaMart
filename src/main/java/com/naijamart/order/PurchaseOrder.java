@@ -38,14 +38,18 @@ public class PurchaseOrder {
     @Column(nullable = false)
     private OrderStatus status = OrderStatus.PENDING;
 
-    // Payment status, separate from order fulfilment
+    // Payment status
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private PaymentStatus paymentStatus = PaymentStatus.UNPAID;
 
-    // Paystack transaction reference
+    // Bank transfer payment reference
     @Column(unique = true)
     private String paymentReference;
+
+    // Unique official receipt number
+    @Column(unique = true)
+    private String receiptNumber;
 
     @Column(nullable = false)
     private LocalDateTime createdAt;
@@ -59,6 +63,7 @@ public class PurchaseOrder {
 
     @PrePersist
     public void beforeSave() {
+
         if (createdAt == null) {
             createdAt = LocalDateTime.now();
         }
@@ -151,6 +156,14 @@ public class PurchaseOrder {
 
     public void setPaymentReference(String paymentReference) {
         this.paymentReference = paymentReference;
+    }
+
+    public String getReceiptNumber() {
+        return receiptNumber;
+    }
+
+    public void setReceiptNumber(String receiptNumber) {
+        this.receiptNumber = receiptNumber;
     }
 
     public LocalDateTime getCreatedAt() {

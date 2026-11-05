@@ -5,6 +5,8 @@ import com.naijamart.entity.Product;
 import com.naijamart.service.ProductService;
 import com.naijamart.service.StockNotificationService;
 
+import jakarta.validation.Valid;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -55,14 +57,16 @@ public class ProductController {
     }
 
     // Public: request an email when an out-of-stock product returns
-    // Example request body: {"email": "customer@example.com"}
     @PostMapping("/{id}/notify-when-available")
     public ResponseEntity<?> requestStockNotification(
             @PathVariable Long id,
             @RequestBody(required = false) Map<String, String> request) {
 
         try {
-            if (request == null || request.get("email") == null) {
+            if (request == null ||
+                    request.get("email") == null ||
+                    request.get("email").isBlank()) {
+
                 return ResponseEntity.badRequest()
                         .body(Map.of(
                                 "error",
@@ -71,7 +75,7 @@ public class ProductController {
 
             stockNotificationService.registerNotification(
                     id,
-                    request.get("email"));
+                    request.get("email").trim());
 
             return ResponseEntity.ok(
                     Map.of(
@@ -88,7 +92,7 @@ public class ProductController {
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> createProduct(
-            @RequestBody Product product) {
+            @Valid @RequestBody Product product) {
 
         try {
             return ResponseEntity.status(HttpStatus.CREATED)
@@ -105,7 +109,7 @@ public class ProductController {
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> updateProduct(
             @PathVariable Long id,
-            @RequestBody Product product) {
+            @Valid @RequestBody Product product) {
 
         try {
             return ResponseEntity.ok(
@@ -118,12 +122,11 @@ public class ProductController {
     }
 
     // Admin only: restock a product
-    // Example request body: {"quantity": 20}
     @PostMapping("/{id}/restock")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> restockProduct(
             @PathVariable Long id,
-            @RequestBody Map<String, Integer> request) {
+            @RequestBody(required = false) Map<String, Integer> request) {
 
         try {
             if (request == null || !request.containsKey("quantity")) {
@@ -134,6 +137,13 @@ public class ProductController {
             }
 
             Integer quantity = request.get("quantity");
+
+            if (quantity == null || quantity <= 0) {
+                return ResponseEntity.badRequest()
+                        .body(Map.of(
+                                "error",
+                                "Restock quantity must be greater than zero"));
+            }
 
             Product product =
                     productService.restockProduct(id, quantity);

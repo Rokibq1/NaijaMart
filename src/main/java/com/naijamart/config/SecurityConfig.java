@@ -48,6 +48,7 @@ public class SecurityConfig {
 
             .authorizeHttpRequests(auth -> auth
 
+                // PUBLIC WEBSITE FILES
                 .requestMatchers(
                     "/",
                     "/index.html",
@@ -59,11 +60,13 @@ public class SecurityConfig {
                     "/images/**"
                 ).permitAll()
 
+                // GOOGLE OAUTH2 LOGIN
                 .requestMatchers(
                     "/oauth2/**",
                     "/login/oauth2/**"
                 ).permitAll()
 
+                // CUSTOMER REGISTRATION AND LOGIN
                 .requestMatchers(
                     HttpMethod.POST,
                     "/api/users",
@@ -71,42 +74,61 @@ public class SecurityConfig {
                     "/api/auth/google/exchange"
                 ).permitAll()
 
+                // PUBLIC PRODUCT BROWSING
                 .requestMatchers(
                     HttpMethod.GET,
                     "/api/products",
                     "/api/products/*"
                 ).permitAll()
 
+                // PRODUCT STOCK NOTIFICATION
                 .requestMatchers(
                     HttpMethod.POST,
                     "/api/products/*/notify-when-available"
                 ).permitAll()
 
+                // PUBLIC BANK ACCOUNT DETAILS
+                .requestMatchers(
+                    HttpMethod.GET,
+                    "/api/transfers/bank-details"
+                ).permitAll()
+
+                // BLOCK OLD SIMULATED AND PAYSTACK PAYMENT ENDPOINTS
+                .requestMatchers(
+                    "/api/demo-payments/**",
+                    "/api/payments/**"
+                ).denyAll()
+
+                // CUSTOMER CHECKOUT REQUIRES LOGIN
                 .requestMatchers(
                     HttpMethod.POST,
                     "/api/orders"
-                ).permitAll()
+                ).authenticated()
 
+                // PUBLIC ORDER TRACKING
                 .requestMatchers(
                     HttpMethod.GET,
                     "/api/orders/track/*"
                 ).permitAll()
 
+                // ALL OTHER BANK TRANSFER ENDPOINTS REQUIRE LOGIN
                 .requestMatchers(
-                    HttpMethod.POST,
-                    "/api/demo-payments/success"
-                ).permitAll()
+                    "/api/transfers/**"
+                ).authenticated()
 
+                // ALL OTHER ENDPOINTS REQUIRE AUTHENTICATION
                 .anyRequest().authenticated()
             );
 
-        // Enable Google login only when Google credentials are configured.
+        // ENABLE GOOGLE LOGIN ONLY WHEN GOOGLE CREDENTIALS ARE CONFIGURED
         if (registrationProvider.getIfAvailable() != null) {
+
             http.oauth2Login(oauth ->
                 oauth.successHandler(googleLoginSuccessHandler)
             );
         }
 
+        // JWT AUTHENTICATION FILTER
         http.addFilterBefore(
             jwtAuthenticationFilter,
             UsernamePasswordAuthenticationFilter.class

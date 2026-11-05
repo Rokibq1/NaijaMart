@@ -1,9 +1,10 @@
-
 package com.naijamart.security;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
+
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
@@ -13,16 +14,26 @@ import java.util.Date;
 @Service
 public class JwtService {
 
-    private static final String SECRET_KEY =
-            "NaijaMartSuperSecretKeyForJwtAuthentication2026VerySecureKey";
+    private final String secretKey;
 
     private static final long EXPIRATION_TIME =
-            1000 * 60 * 60 * 24;
+            1000L * 60 * 60 * 24;
+
+    public JwtService(
+            @Value("${app.jwt.secret}") String secretKey) {
+
+        if (secretKey == null || secretKey.length() < 32) {
+            throw new IllegalArgumentException(
+                    "JWT secret must contain at least 32 characters.");
+        }
+
+        this.secretKey = secretKey;
+    }
 
     private SecretKey getSigningKey() {
 
         return Keys.hmacShaKeyFor(
-                SECRET_KEY.getBytes(StandardCharsets.UTF_8)
+                secretKey.getBytes(StandardCharsets.UTF_8)
         );
     }
 
@@ -44,8 +55,7 @@ public class JwtService {
 
     public String extractEmail(String token) {
 
-        return extractAllClaims(token)
-                .getSubject();
+        return extractAllClaims(token).getSubject();
     }
 
     public String extractRole(String token) {
@@ -60,8 +70,10 @@ public class JwtService {
 
             Claims claims = extractAllClaims(token);
 
-            return claims.getExpiration()
-                    .after(new Date());
+            return claims.getSubject() != null
+                    && claims.getExpiration() != null
+                    && claims.getExpiration().after(new Date())
+                    && claims.get("role", String.class) != null;
 
         } catch (Exception e) {
 

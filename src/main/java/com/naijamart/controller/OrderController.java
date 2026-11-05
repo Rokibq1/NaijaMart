@@ -2,8 +2,10 @@
 package com.naijamart.controller;
 
 import com.naijamart.dto.CheckoutRequest;
+import com.naijamart.dto.OrderStatusRequest;
 import com.naijamart.order.OrderItem;
 import com.naijamart.order.OrderStatus;
+import com.naijamart.order.PaymentStatus;
 import com.naijamart.order.PurchaseOrder;
 import com.naijamart.service.OrderService;
 
@@ -15,6 +17,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.security.Principal;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -35,9 +38,6 @@ public class OrderController {
     public ResponseEntity<Map<String, Object>> placeOrder(
             @Valid @RequestBody CheckoutRequest request) {
 
-        // OrderService saves the order and publishes OrderPlacedEvent.
-        // EmailNotificationService handles the confirmation email
-        // after the order transaction commits.
         PurchaseOrder order = orderService.placeOrder(request);
 
         Map<String, Object> response = new LinkedHashMap<>();
@@ -49,7 +49,6 @@ public class OrderController {
         response.put("totalAmount", order.getTotalAmount());
         response.put("createdAt", order.getCreatedAt());
 
-        // Email delivery is handled separately after the order is saved.
         response.put("emailSent", false);
         response.put(
                 "emailMessage",
@@ -64,6 +63,12 @@ public class OrderController {
     public ResponseEntity<Map<String, Object>> trackOrder(
             @PathVariable String trackingNumber) {
 
+        if (trackingNumber == null || trackingNumber.isBlank()) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Tracking number is required.");
+        }
+
         PurchaseOrder order =
                 orderService.getOrderByTrackingNumber(trackingNumber);
 
@@ -73,6 +78,26 @@ public class OrderController {
         response.put("status", order.getStatus());
         response.put("totalAmount", order.getTotalAmount());
         response.put("createdAt", order.getCreatedAt());
+
+        return ResponseEntity.ok(response);
+    }
+
+    // CUSTOMER: CHECK OWN PAYMENT STATUS
+    @GetMapping("/{trackingNumber}/payment-status")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<Map<String, Object>> getCustomerPaymentStatus(
+            @PathVariable String trackingNumber,
+            Principal principal) {
+
+        PaymentStatus paymentStatus =
+                orderService.getCustomerPaymentStatus(
+                        trackingNumber,
+                        principal.getName());
+
+        Map<String, Object> response = new LinkedHashMap<>();
+
+        response.put("trackingNumber", trackingNumber);
+        response.put("paymentStatus", paymentStatus);
 
         return ResponseEntity.ok(response);
     }
@@ -96,26 +121,17 @@ public class OrderController {
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Map<String, Object>> updateOrderStatus(
             @PathVariable Long id,
-            @RequestBody Map<String, String> request) {
-
-        String statusText = request.get("status");
-
-        if (statusText == null || statusText.isBlank()) {
-            throw new ResponseStatusException(
-                    HttpStatus.BAD_REQUEST,
-                    "Please provide an order status.");
-        }
+            @Valid @RequestBody OrderStatusRequest request) {
 
         OrderStatus newStatus;
 
         try {
             newStatus = OrderStatus.valueOf(
-                    statusText.trim().toUpperCase());
+                    request.getStatus().trim().toUpperCase());
         } catch (IllegalArgumentException exception) {
             throw new ResponseStatusException(
                     HttpStatus.BAD_REQUEST,
-                    "Invalid order status. Use PENDING, CONFIRMED, "
-                            + "PROCESSING, SHIPPED, DELIVERED or CANCELLED.");
+                    "Invalid order status.");
         }
 
         PurchaseOrder order =
@@ -138,6 +154,12 @@ public class OrderController {
         response.put("deliveryAddress", order.getDeliveryAddress());
         response.put("totalAmount", order.getTotalAmount());
         response.put("status", order.getStatus());
+
+        // Include payment information for administrators.
+        response.put("paymentStatus", order.getPaymentStatus());
+        response.put("paymentReference", order.getPaymentReference());
+        response.put("receiptNumber", order.getReceiptNumber());
+
         response.put("createdAt", order.getCreatedAt());
 
         List<Map<String, Object>> items = order.getItems()

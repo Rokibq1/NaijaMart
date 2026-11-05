@@ -14,11 +14,20 @@ import java.util.Optional;
 public interface PurchaseOrderRepository
         extends JpaRepository<PurchaseOrder, Long> {
 
-    Optional<PurchaseOrder> findByTrackingNumber(String trackingNumber);
+    // FIND ORDER BY TRACKING NUMBER
+    Optional<PurchaseOrder> findByTrackingNumber(
+            String trackingNumber);
 
+    // FIND ORDER BY TRACKING NUMBER AND CUSTOMER EMAIL
+    Optional<PurchaseOrder> findByTrackingNumberAndCustomerEmail(
+            String trackingNumber,
+            String customerEmail);
+
+    // ADMIN: GET ALL ORDERS WITH ITEMS AND PRODUCTS
     @EntityGraph(attributePaths = {"items", "items.product"})
     List<PurchaseOrder> findAllByOrderByCreatedAtDesc();
 
+    // FIND ORDER WITH ITEMS BY ORDER ID
     @Query("""
             select distinct o
             from PurchaseOrder o

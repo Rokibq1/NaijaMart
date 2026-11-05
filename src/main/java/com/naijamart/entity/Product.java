@@ -1,6 +1,9 @@
+
 package com.naijamart.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.*;
+
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
@@ -12,18 +15,48 @@ public class Product {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @NotBlank(message = "Product name is required")
+    @Size(
+        min = 2,
+        max = 150,
+        message = "Product name must contain between 2 and 150 characters"
+    )
     @Column(nullable = false, length = 150)
     private String name;
 
+    @Size(
+        max = 2000,
+        message = "Description cannot exceed 2000 characters"
+    )
     @Column(length = 2000)
     private String description;
 
+    @NotNull(message = "Product price is required")
+    @DecimalMin(
+        value = "0.01",
+        message = "Product price must be greater than zero"
+    )
+    @Digits(
+        integer = 10,
+        fraction = 2,
+        message = "Price must have up to 10 whole digits and 2 decimal places"
+    )
     @Column(nullable = false, precision = 12, scale = 2)
     private BigDecimal price;
 
+    @NotNull(message = "Stock quantity is required")
+    @PositiveOrZero(message = "Stock quantity cannot be negative")
     @Column(nullable = false)
     private Integer stockQuantity = 0;
 
+    @Size(
+        max = 1000,
+        message = "Image URL cannot exceed 1000 characters"
+    )
+    @Pattern(
+        regexp = "^(?:$|/images/(?!.*\\.\\.)[A-Za-z0-9._/-]+|https?://[^\\s/]+(?:/[^\\s]*)?)$",
+        message = "Image must be a valid HTTP/HTTPS URL or a local /images/ path"
+    )
     private String imageUrl;
 
     @Column(nullable = false)
