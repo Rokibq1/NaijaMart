@@ -8,12 +8,14 @@ import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
@@ -93,7 +95,7 @@ public class SecurityConfig {
                     "/api/transfers/bank-details"
                 ).permitAll()
 
-                // BLOCK OLD SIMULATED AND PAYSTACK PAYMENT ENDPOINTS
+                // BLOCK OLD PAYMENT ENDPOINTS
                 .requestMatchers(
                     "/api/demo-payments/**",
                     "/api/payments/**"
@@ -111,16 +113,25 @@ public class SecurityConfig {
                     "/api/orders/track/*"
                 ).permitAll()
 
-                // ALL OTHER BANK TRANSFER ENDPOINTS REQUIRE LOGIN
+                // OTHER BANK TRANSFER ENDPOINTS REQUIRE LOGIN
                 .requestMatchers(
                     "/api/transfers/**"
                 ).authenticated()
 
                 // ALL OTHER ENDPOINTS REQUIRE AUTHENTICATION
                 .anyRequest().authenticated()
+            )
+
+            // RETURN HTTP 401 FOR API REQUESTS
+            // INSTEAD OF REDIRECTING TO GOOGLE LOGIN
+            .exceptionHandling(exceptions ->
+                exceptions.defaultAuthenticationEntryPointFor(
+                    new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED),
+                    request -> request.getServletPath().startsWith("/api/")
+                )
             );
 
-        // ENABLE GOOGLE LOGIN ONLY WHEN GOOGLE CREDENTIALS ARE CONFIGURED
+        // ENABLE GOOGLE LOGIN WHEN GOOGLE CREDENTIALS EXIST
         if (registrationProvider.getIfAvailable() != null) {
 
             http.oauth2Login(oauth ->
