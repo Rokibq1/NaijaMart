@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NaijaMart | Online Shopping</title>
 
+
+
     <style>
         :root {
             --primary: #087443;
@@ -601,6 +603,193 @@
             .products-grid { grid-template-columns: 1fr; }
             .product-image-wrap { height: 220px; }
         }
+
+        /* =================================
+   NaijaMart Mobile Side Menu
+================================= */
+
+.hamburger-button {
+    display: none;
+    width: 44px;
+    height: 42px;
+    padding: 9px;
+    border: none;
+    border-radius: 7px;
+    background: #087443;
+    cursor: pointer;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 5px;
+}
+
+.hamburger-button span {
+    display: block;
+    width: 23px;
+    height: 3px;
+    background: white;
+    border-radius: 3px;
+}
+
+.mobile-menu-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+    z-index: 1998;
+}
+
+.mobile-menu-overlay.open {
+    opacity: 1;
+    visibility: visible;
+}
+
+.mobile-side-menu {
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: min(320px, 85vw);
+    height: 100vh;
+    height: 100dvh;
+    background: white;
+    z-index: 1999;
+    transform: translateX(100%);
+    transition: transform 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    box-shadow: -5px 0 20px rgba(0, 0, 0, 0.15);
+    overflow-y: auto;
+}
+
+.mobile-side-menu.open {
+    transform: translateX(0);
+}
+
+.mobile-menu-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.close-menu-button {
+    background: transparent;
+    border: none;
+    color: #333;
+    font-size: 32px;
+    cursor: pointer;
+    line-height: 1;
+}
+
+.mobile-menu-links {
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+}
+
+.mobile-menu-links button {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 12px;
+    border: none;
+    border-radius: 7px;
+    background: transparent;
+    color: #222;
+    font-size: 15px;
+    text-align: left;
+    cursor: pointer;
+}
+
+.mobile-menu-links button:hover {
+    background: #f0fdf4;
+    color: #087443;
+}
+
+.mobile-menu-links button span:first-child {
+    width: 24px;
+}
+
+.mobile-menu-divider {
+    height: 1px;
+    background: #e5e7eb;
+    margin: 10px 0;
+}
+
+.mobile-cart-count {
+    margin-left: auto;
+    background: #f5a623;
+    color: #222;
+    border-radius: 20px;
+    padding: 3px 9px;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.mobile-menu-footer {
+    margin-top: auto;
+    padding: 18px;
+    color: #6b7280;
+    font-size: 12px;
+    border-top: 1px solid #e5e7eb;
+    text-align: center;
+}
+
+body.mobile-menu-open {
+    overflow: hidden;
+}
+
+/* Show hamburger on smaller screens */
+@media (max-width: 768px) {
+    header {
+        flex-wrap: wrap;
+    }
+
+    .hamburger-button {
+        display: flex;
+        margin-left: auto;
+    }
+
+    .header-actions {
+        display: none !important;
+    }
+
+    .search-form {
+        order: 3;
+        width: 100%;
+        flex: 1 0 100%;
+
+        /* NaijaMart Animated Hamburger Button */
+.hamburger-button {
+    background: linear-gradient(135deg, #087443, #f5a623);
+    background-size: 200% 200%;
+    animation: naijaMartFlash 2s ease infinite;
+    box-shadow: 0 0 10px rgba(8, 116, 67, 0.4);
+}
+
+@keyframes naijaMartFlash {
+    0% {
+        background-position: 0% 50%;
+        box-shadow: 0 0 8px #087443;
+    }
+
+    50% {
+        background-position: 100% 50%;
+        box-shadow: 0 0 15px #f5a623;
+    }
+
+    100% {
+        background-position: 0% 50%;
+        box-shadow: 0 0 8px #087443;
+    }
+}
+    }
+}
     </style>
 </head>
 
@@ -620,6 +809,18 @@
                 aria-label="Search products">
             <button type="submit">Search</button>
         </form>
+
+
+<button type="button"
+    class="hamburger-button"
+    id="hamburgerButton"
+    aria-label="Open navigation menu"
+    aria-expanded="false"
+    aria-controls="mobileSideMenu">
+    <span></span>
+    <span></span>
+    <span></span>
+</button>
 
 
 <nav class="header-actions" aria-label="Main navigation">
@@ -688,6 +889,69 @@
 </nav>
 
 
+<div class="mobile-menu-overlay" id="mobileMenuOverlay"></div>
+
+<aside class="mobile-side-menu" id="mobileSideMenu"
+    aria-label="Mobile navigation" aria-hidden="true">
+
+    <div class="mobile-menu-heading">
+        <a class="logo" href="#"
+            onclick="closeMobileMenu(); showView('shopView'); return false;">
+            Naija<span>Mart</span>
+        </a>
+
+        <button type="button" id="closeMobileMenu"
+            class="close-menu-button" aria-label="Close menu">
+            &times;
+        </button>
+    </div>
+
+    <div class="mobile-menu-links">
+
+        <button type="button"
+            onclick="closeMobileMenu(); showView('shopView')">
+            <span>🏠</span> Shop
+        </button>
+
+        <button type="button"
+            onclick="closeMobileMenu(); showView('cartView')">
+            <span>🛒</span> Shopping Cart
+            <span class="mobile-cart-count" id="mobileCartCount">0</span>
+        </button>
+
+        <button type="button"
+            onclick="closeMobileMenu(); showView('loginView')">
+            <span>👤</span> My Account
+        </button>
+
+        <button type="button"
+            onclick="closeMobileMenu(); showView('trackingView')">
+            <span>📦</span> Track Order
+        </button>
+
+        <div class="mobile-menu-divider"></div>
+
+        <button type="button"
+            onclick="closeMobileMenu(); handleAccountSignIn()">
+            <span>🔐</span> Sign In
+        </button>
+
+       <button type="button"
+    onclick="closeMobileMenu(); handleAccountSignUp()">
+    <span>✍️</span> Create Account
+</button>
+
+</div>
+
+<div class="mobile-menu-footer">
+    Quality products, convenient shopping!
+</div>
+
+</aside>
+
+</header>
+
+<main>
 
     <main>
         <div id="shopView" class="page-view active">
@@ -2942,6 +3206,68 @@ document.getElementById("trackingForm").addEventListener("submit", async functio
         renderCart();
         loadProducts();
         handleGoogleLoginCallback();
+
+
+// =================================
+// NaijaMart Mobile Side Menu
+// =================================
+
+const hamburgerButton = document.getElementById("hamburgerButton");
+const sideMenu = document.getElementById("mobileSideMenu");
+const overlay = document.getElementById("mobileMenuOverlay");
+const closeButton = document.getElementById("closeMobileMenu");
+const mobileCartCount = document.getElementById("mobileCartCount");
+const desktopCartCount = document.getElementById("cartCount");
+
+if (hamburgerButton && sideMenu && overlay && closeButton) {
+
+    function updateMobileCartCount() {
+        if (desktopCartCount && mobileCartCount) {
+            mobileCartCount.textContent = desktopCartCount.textContent;
+        }
+    }
+
+    function openMobileMenu() {
+        updateMobileCartCount();
+
+        sideMenu.classList.add("open");
+        overlay.classList.add("open");
+        document.body.classList.add("mobile-menu-open");
+
+        hamburgerButton.setAttribute("aria-expanded", "true");
+        sideMenu.setAttribute("aria-hidden", "false");
+    }
+
+    window.closeMobileMenu = function () {
+        sideMenu.classList.remove("open");
+        overlay.classList.remove("open");
+        document.body.classList.remove("mobile-menu-open");
+
+        hamburgerButton.setAttribute("aria-expanded", "false");
+        sideMenu.setAttribute("aria-hidden", "true");
+    };
+
+    hamburgerButton.addEventListener("click", openMobileMenu);
+    closeButton.addEventListener("click", closeMobileMenu);
+    overlay.addEventListener("click", closeMobileMenu);
+
+    document.addEventListener("keydown", function (event) {
+        if (event.key === "Escape") {
+            closeMobileMenu();
+        }
+    });
+
+    if (desktopCartCount && mobileCartCount) {
+        const cartObserver = new MutationObserver(updateMobileCartCount);
+
+        cartObserver.observe(desktopCartCount, {
+            childList: true,
+            characterData: true,
+            subtree: true
+        });
+    }
+}
+
     </script>
 </body>
 </html>
