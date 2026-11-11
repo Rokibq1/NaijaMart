@@ -12,7 +12,7 @@
             --primary: #087443;
             --primary-dark: #055b34;
             --accent: #f5a623;
-            --background: #f5f7f6;
+            --background: #eef7f2;
             --white: #fff;
             --text: #222;
             --muted: #6b7280;
@@ -906,42 +906,41 @@ body.mobile-menu-open {
         </button>
     </div>
 
-    <div class="mobile-menu-links">
+    
+<div class="mobile-menu-links">
 
-        <button type="button"
-            onclick="closeMobileMenu(); showView('shopView')">
-            <span>🏠</span> Shop
-        </button>
+    <button type="button"
+        onclick="closeMobileMenu(); showView('shopView')">
+        <span>🏠</span> Shop
+    </button>
 
-        <button type="button"
-            onclick="closeMobileMenu(); showView('cartView')">
-            <span>🛒</span> Shopping Cart
-            <span class="mobile-cart-count" id="mobileCartCount">0</span>
-        </button>
+    <button type="button"
+        onclick="closeMobileMenu(); showView('cartView')">
+        <span>🛒</span> Shopping Cart
+        <span class="mobile-cart-count" id="mobileCartCount">0</span>
+    </button>
 
-        <button type="button"
-            onclick="closeMobileMenu(); showView('loginView')">
-            <span>👤</span> My Account
-        </button>
+    <button type="button"
+        onclick="closeMobileMenu(); showView('loginView')">
+        <span>👤</span> My Account
+    </button>
 
-        <button type="button"
-            onclick="closeMobileMenu(); showView('trackingView')">
-            <span>📦</span> Track Order
-        </button>
+    <button type="button"
+        onclick="closeMobileMenu(); showView('trackingView')">
+        <span>📦</span> Track Order
+    </button>
 
-        <div class="mobile-menu-divider"></div>
+    <div class="mobile-menu-divider"></div>
 
-        <button type="button"
-            onclick="closeMobileMenu(); handleAccountSignIn()">
-            <span>🔐</span> Sign In
-        </button>
-
-       <button type="button"
-    onclick="closeMobileMenu(); handleAccountSignUp()">
-    <span>✍️</span> Create Account
-</button>
+    <button type="button"
+        id="mobileAuthButton"
+        onclick="handleMobileAuthAction()">
+        <span id="mobileAuthIcon">🔐</span>
+        <span id="mobileAuthText">Sign In / Sign Up</span>
+    </button>
 
 </div>
+
 
 <div class="mobile-menu-footer">
     Quality products, convenient shopping!
@@ -1719,6 +1718,7 @@ function handleAccountSignUp() {
 
 
 
+
 function updateLoginInterface() {
     const token = getAuthToken();
     const email = localStorage.getItem(EMAIL_STORAGE_KEY) || "";
@@ -1735,6 +1735,10 @@ function updateLoginInterface() {
     const signupOption = document.getElementById("accountSignupOption");
     const ordersOption = document.getElementById("accountOrdersOption");
     const accountLogoutOption = document.getElementById("accountLogoutOption");
+
+    // Mobile menu elements
+    const mobileAuthIcon = document.getElementById("mobileAuthIcon");
+    const mobileAuthText = document.getElementById("mobileAuthText");
 
     if (token) {
         if (accountLabel) {
@@ -1760,6 +1764,10 @@ function updateLoginInterface() {
         if (logoutButton) logoutButton.style.display = "block";
         if (googleButton) googleButton.style.display = "none";
 
+        // Mobile menu: show Logout only
+        if (mobileAuthIcon) mobileAuthIcon.textContent = "🚪";
+        if (mobileAuthText) mobileAuthText.textContent = "Log Out";
+
     } else {
         if (accountLabel) {
             accountLabel.textContent = "Login";
@@ -1781,8 +1789,26 @@ function updateLoginInterface() {
 
         if (logoutButton) logoutButton.style.display = "none";
         if (googleButton) googleButton.style.display = "block";
+
+        // Mobile menu: show combined Sign In / Sign Up
+        if (mobileAuthIcon) mobileAuthIcon.textContent = "🔐";
+        if (mobileAuthText) mobileAuthText.textContent = "Sign In / Sign Up";
     }
 }
+
+
+
+function handleMobileAuthAction() {
+    closeMobileMenu();
+
+    if (getAuthToken()) {
+        logout();
+    } else {
+        showView("loginView");
+        showAuthOptions();
+    }
+}
+
 
         function prefillCheckoutEmail() {
             const email = localStorage.getItem(EMAIL_STORAGE_KEY) || "";
